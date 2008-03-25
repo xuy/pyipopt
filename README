@@ -1,0 +1,28 @@
+In order to use this package, you have to have at least those packages on your computer:
+For compile: gcc, ld, 
+Library: nlpy (download it from source-forge), it's painful to compile
+	ipopt
+	numpy
+	pysparse 
+Etc: 	Python, of course
+
+Note: you have to patch the nlpy. 
+Edit $NLPYHOME$/Src/_amplpy.c around line 454
+change the code of 
+                     pirow[ j ] = (long)i;
+                     picol[ j ] = (long)(cg->varno);
+
+to 
+
+	  pirow[ cg->goff ] = (long)i;
+	  picol[ cg->goff ] = (long)(cg->varno);
+
+It's a bug in NLpy. AMPL return the sparse matrix in col-wise manner
+	[@See Hook your solver with AMPL, page 12, the jacval description]
+The sparse matrix is stored as the triple (row, col, values). Nlpy return the row, col tuple in the row-wise manner but AMPL set the values in a col-wise manner according to goff. The way to fix that is to output the row-col tuple also in the col-wise manner. 
+
+Another way to fix this is to set AMPL's goff value to make it row-wise 
+
+trimloss.nl and test.nl are all test samples. Batch.sh simplifies the compiling task. Later I will add configure and make to this system.
+
+testhook2.py demonstrates the idea. If you provide the pyipopt.create function withe last eval_h callback function, ipopt will delegate the Hessian matrix calculation to you. Otherwise ipopt will use approximate hessian calculation. 
