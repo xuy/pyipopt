@@ -1,3 +1,8 @@
+"""
+Python and ipopt play together
+Eric You Xu, Washington University 2008
+"""
+
 import pyipopt
 import amplpy, _amplpy
 import sys, getopt
@@ -58,13 +63,9 @@ dummyh, hrow, hcol = nlp.hess( nlp.x0, nlp.pi0, 1.0 )
 
 def eval_h(x, lagrange, obj_factor, flag):
 	if flag:
-		print "In the structure of H"
 		return (hrow.tolist(), hcol.tolist())
 	else:
-		print "In callback, obj_factor is ", obj_factor
 		temph, dummyr, dummyc = nlp.hess(array(x), array(lagrange), obj_factor)
-		#print "The obj factor is ", obj_factor
-		#h = obj_factor * temph
 		assert len(temph) == nnzh
 		return temph.tolist()
 

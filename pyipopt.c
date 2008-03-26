@@ -1,36 +1,45 @@
-/* whatever licence, free
-	Eric You Xu, WUSTL
-	
-	RoT: 	 1, start from a relative small core, make sure it works 
-			 2, check the objective warp twice
-			 		wrap a tuple of callable object  
-			 		use "O" instead of 'o', 
-			 		warp it with (), etc 
-			 3, Exam the python function before hook back
-			 4, if that's a single vaule, use pyarg_parse
-				 
-	TODO:
-			0. Deference use valgrind: DONE
-			1. Use this code with AMPL, connect nlpy and pyipopt tomorrow. DONE
-					2nd dev requires some knowledge
-			2. Read openopt code and hook them 
-				
-	LESSIMPORTANT:
-			handle the reference count, is there any memory leak??? 
+/* Copyright (c) 2008, Eric You Xu, Washington Univeristy
+* All rights reserved.
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions are met:
+*
+*     * Redistributions of source code must retain the above copyright
+*       notice, this list of conditions and the following disclaimer.
+*     * Redistributions in binary form must reproduce the above copyright
+*       notice, this list of conditions and the following disclaimer in the
+*       documentation and/or other materials provided with the distribution.
+*     * Neither the name of the Washington Univeristy nor the
+*       names of its contributors may be used to endorse or promote products
+*       derived from this software without specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS "AS IS" AND ANY
+* EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+* WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+* DISCLAIMED. IN NO EVENT SHALL THE REGENTS AND CONTRIBUTORS BE LIABLE FOR ANY
+* DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+* (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+* LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+* ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+* (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+* SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+/* Version 0.2 All numpy types */
 
 #include "Python.h"
 #include "IpStdCInterface.h"
 #include <stdio.h>
 #include "hook.h"
+#include "numpy/arrayobject.h"       /* NumPy header */
 
 static PyObject *eval_f_python 		= NULL;
 static PyObject *eval_grad_f_python = NULL;
 static PyObject *eval_g_python 		= NULL;
 static PyObject *eval_jac_g_python 	= NULL;
 static PyObject *eval_h_python		= NULL;
-
 static IpoptProblem nlp = NULL;             /* IpoptProblem */
+static int n;
+static int m;
+
 
 /*  Call back function section 
 	Adapters that delegate actual  function to Python 
@@ -46,13 +55,14 @@ static IpoptProblem nlp = NULL;             /* IpoptProblem */
 Bool eval_f(Index n, Number* x, Bool new_x,
             Number* obj_value, UserDataPtr user_data)
 {
-	PyObject *newx = PyList_New(n);
-	if (!newx) return FALSE;
-	int i;
-	for (i=0; i<n; i++)
-		PyList_SetItem(newx, i, PyFloat_FromDouble(x[i]));
 	
-	PyObject* arglist = Py_BuildValue("(O)", newx);
+	int dims[1];
+	dims[0] = n;
+	
+	PyObject *arrayx = PyArray_FromDimsAndData(1, dims, PyArray_DOUBLE , (char*) x);
+	if (!arrayx) return FALSE;
+
+	PyObject* arglist = Py_BuildValue("(O)", arrayx);
 	PyObject* result  = PyObject_CallObject (eval_f_python ,arglist);
 
 	if (!PyFloat_Check(result))
@@ -60,7 +70,7 @@ Bool eval_f(Index n, Number* x, Bool new_x,
 	
 	*obj_value =  PyFloat_AsDouble(result);
 	Py_DECREF(result);
-  	Py_CLEAR(newx);
+  	Py_DECREF(arrayx);
 	Py_CLEAR(arglist);
   	return TRUE;
 }
@@ -70,23 +80,28 @@ static Bool eval_grad_f(Index n, Number* x, Bool new_x,
 {
 	if (eval_grad_f_python == NULL) PyErr_Print();
 	
-	PyObject *newx = PyList_New(n);
-	int i;
-	for (i=0; i<n; i++) 
-		PyList_SetItem(newx, i, PyFloat_FromDouble(x[i]));
+	int dims[1];
+	dims[0] = n;
 	
-	PyObject* arglist = Py_BuildValue("(O)", newx);
-	PyObject* result = PyObject_CallObject (eval_grad_f_python, arglist);
+	PyObject *arrayx = PyArray_FromDimsAndData(1, dims, PyArray_DOUBLE , (char*) x);
+	if (!arrayx) return FALSE;
 	
-	if (!PyList_Check(result))
+	PyObject* arglist = Py_BuildValue("(O)", arrayx);
+	PyArrayObject* result = (PyArrayObject*) PyObject_CallObject (eval_grad_f_python, arglist);
+	
+	if (!result) 
+		PyErr_Print();
+		
+	if (!PyArray_Check(result))
 		PyErr_Print();
 	
+	double *data = (double*)result->data;
+	int i;
 	for (i = 0; i < n; i++)
-		grad_f[i] = PyFloat_AsDouble(PyList_GetItem(result, i));
-	
+		grad_f[i] = data[i];
+		
 	Py_DECREF(result);
-	
-  	Py_CLEAR(newx);
+  	Py_CLEAR(arrayx);
 	Py_CLEAR(arglist);	
 	return TRUE;
 }
@@ -95,25 +110,32 @@ static Bool eval_grad_f(Index n, Number* x, Bool new_x,
 Bool eval_g(Index n, Number* x, Bool new_x,
             Index m, Number* g, UserDataPtr user_data)
 {
-	if (eval_g_python == NULL) PyErr_Print();
-	PyObject *newx = PyList_New(n);
+	if (eval_g_python == NULL) 
+		PyErr_Print();
 	
-	int i;
-	for (i=0; i<n; i++) 
-		PyList_SetItem(newx, i, PyFloat_FromDouble(x[i]));
+	int dims[1];
+	dims[0] = n;
 	
-	PyObject* arglist = Py_BuildValue("(O)", newx);
-	PyObject* result = PyObject_CallObject (eval_g_python, arglist);
+	PyObject *arrayx = PyArray_FromDimsAndData(1, dims, PyArray_DOUBLE , (char*) x);
+	if (!arrayx) return FALSE;
 	
-	if (!PyList_Check(result))
+	PyObject* arglist = Py_BuildValue("(O)", arrayx);
+	PyArrayObject* result = (PyArrayObject*) PyObject_CallObject (eval_g_python, arglist);
+	
+	if (!result) 
 		PyErr_Print();
 		
-	for (i = 0; i < m; i++) 
-		g[i] = PyFloat_AsDouble(PyList_GetItem(result, i));
-	
+	if (!PyArray_Check(result))
+		PyErr_Print();
+		
+		
+	double *data = (double*)result->data;
+	int i;
+	for (i = 0; i < m; i++)
+		g[i] = data[i];
+		
 	Py_DECREF(result);
-	
-  	Py_CLEAR(newx);
+  	Py_CLEAR(arrayx);
 	Py_CLEAR(arglist);
 	return TRUE;
 }
@@ -125,49 +147,65 @@ Bool eval_jac_g(Index n, Number *x, Bool new_x,
                 UserDataPtr user_data)
 {
 	int i;
-	if (eval_grad_f_python == NULL) PyErr_Print();
+	long* rowd = NULL; 
+	long* cold = NULL;
 	
+	int dims[1];
+	dims[0] = n;
+	
+	double *data;
+
+	if (eval_grad_f_python == NULL) 
+		PyErr_Print();
+		
 	if (values == NULL) {		
 		PyObject *newx = Py_True;
 		
 		PyObject* arglist = Py_BuildValue("(OO)", newx, Py_True);	
 		PyObject* result = PyObject_CallObject (eval_jac_g_python, arglist);
 		
+		
 		if (!PyTuple_Check(result))
 			PyErr_Print();
 			
-		PyObject* row = PyTuple_GetItem(result, 0);
-		PyObject* col = PyTuple_GetItem(result, 1);
-
-		if (!PyList_Check(row) || !PyList_Check(col))
+		PyArrayObject* row = (PyArrayObject*) PyTuple_GetItem(result, 0);
+		PyArrayObject* col = (PyArrayObject*) PyTuple_GetItem(result, 1);
+		
+		if (!row || !col || !PyList_Check(row) || !PyList_Check(col))
 			PyErr_Print();
 
+		rowd = (long*) row->data;
+		cold = (long*) col->data;
+		
+		printf("I am here, before copy\n");
 		for (i = 0; i < nele_jac; i++) {
-			PyArg_Parse(PyList_GetItem(row, i), "i", &iRow[i]);
-			PyArg_Parse(PyList_GetItem(col, i), "i", &jCol[i]);
+			iRow[i] = (int) rowd[i];
+			jCol[i] = (int) cold[i];
 		}
-
+		
 		Py_DECREF(result);
-		Py_CLEAR(arglist);	
-	
+		Py_CLEAR(arglist);
+		
 	}
 	else {	// Assign the jac_g
 		
-		PyObject *newx = PyList_New(n);
-		for (i=0; i<n; i++) 
-			PyList_SetItem(newx, i, PyFloat_FromDouble(x[i]));
+		PyObject *arrayx = PyArray_FromDimsAndData(1, dims, PyArray_DOUBLE , (char*) x);
+		if (!arrayx) return FALSE;
 		
-		PyObject* arglist = Py_BuildValue("(OO)", newx, Py_False);
+		PyObject* arglist = Py_BuildValue("(OO)", arrayx, Py_False);
+		PyArrayObject* result = (PyArrayObject*) 
+					PyObject_CallObject (eval_jac_g_python, arglist);
 		
-		PyObject* result = PyObject_CallObject (eval_jac_g_python, arglist);
-		if (!PyTuple_Check(result))
+		if (!result || !PyArray_Check(result)) 
 			PyErr_Print();
 		
-		for (i = 0; i < nele_jac; i++) 
-			values[i] = PyFloat_AsDouble(PyList_GetItem(result, i));
+		data = (double*)result->data;
+		
+		for (i = 0; i < nele_jac; i++)
+			values[i] = data[i];
 		
 		Py_DECREF(result);
-		Py_CLEAR(newx);
+		Py_CLEAR(arrayx);
 		Py_CLEAR(arglist);
 	}
   	return TRUE;
@@ -244,6 +282,37 @@ static Bool eval_h(Index n, Number *x, Bool new_x, Number obj_factor,
 
 /* Interface to Python */
 // Crate problem
+
+static char PYIPOPT_CREATE_DOC[] = "create(n, xl, xu, m, gl, gu, nnzj, nnzh, eval_f, eval_grad_f, eval_g, eval_jac_g) -> Boolean\n \
+        \n \
+        Create a problem instance and return True if successed  \n \
+        \n \
+        n is the number of variables, \n \
+        xl is the lower bound of x as bounded constraints \n \
+        xu is the upper bound of x as bounded constraints \n \
+        	both xl, xu should be one dimension arrays with length n \n \
+        \n \
+        m is the number of constraints, \n \
+        gl is the lower bound of constraints \n \
+        gu is the upper bound of constraints \n \
+        	both gl, gu should be one dimension arrays with length m \n \
+        nnzj is the number of nonzeros in Jacobi matrix \n \
+        nnzh is the number of nonzeros in Hessian matrix, you can set it to 0 \n \
+        \n \
+        eval_f is the call back function to calculate objective value, \n \
+        	it takes one single argument x as input vector \n \
+        eval_grad_f calculates gradient for objective function \n \
+        eval_g calculates the constraint values and return an array \n \
+        eval_jac_g calculates the jacobi matrix. It takes two arguments, \n \
+        	the first is the variable x and the second is a Boolean flag \n \
+        	if the flag is true, it supposed to return a tuple (row, col) \n \
+        		to indicate the sparse Jacobian matrix's structure. \n \
+        	if the flag is false if returns the valuse of the jacobian matrix \n \
+        		with length nnzj \n \
+        eval_h calculates the hessian matrix, it's optional. \n \
+        	if omitted, please set nnzh to 0 and ipopt will use approximated hessian \n \
+        	which will make the convergence slower. ";
+        	
 static PyObject *create(PyObject *obj, PyObject *args)
 {
 	PyObject *f;
@@ -251,24 +320,31 @@ static PyObject *create(PyObject *obj, PyObject *args)
 	PyObject *g;
 	PyObject *jacg;
 	PyObject *h = NULL;
-	int n;			// Number of var
-	PyObject *xL;
-	PyObject *xU;
-	int m;			// Number of con
-	PyObject *gL;
-	PyObject *gU;
+	//int n;			// Number of var
+	PyArrayObject *xL;
+	PyArrayObject *xU;
+	//int m;			// Number of con
+	PyArrayObject *gL;
+	PyArrayObject *gU;
+	
 	int nele_jac;
 	int nele_hess;
 	
+	double* xldata, *xudata;
+	double* gldata, *gudata;
 	
     double result;
     int i;
-    
-    if (!PyArg_ParseTuple(args, "iOOiOOiiOOOO|O", 
-    	&n, &xL, &xU, 
-    	&m, &gL, &gU,
-    	&nele_jac, &nele_hess,
-    	&f, &gradf, &g, &jacg, &h)) 
+    // "O!", &PyArray_Type &a_x 
+    if (!PyArg_ParseTuple(args, "iO!O!iO!O!iiOOOO|O", 
+    	&n, &PyArray_Type, &xL, 
+    		&PyArray_Type, &xU, 
+    		&m, 
+    		&PyArray_Type, &gL,
+    		&PyArray_Type, &gU,
+    		&nele_jac, &nele_hess,
+    		&f, &gradf, &g, &jacg, 
+    		&h)) 
         return Py_False;
         
         
@@ -307,19 +383,26 @@ static PyObject *create(PyObject *obj, PyObject *args)
 		
 		x_L = (Number*)malloc(sizeof(Number)*n);
   		x_U = (Number*)malloc(sizeof(Number)*n);
-  		/* set the values for the variable bounds */
-		for (i = 0; i< n; i++)
-		{
-			x_L[i] = PyFloat_AsDouble(PyList_GetItem(xL, i));
-			x_U[i] = PyFloat_AsDouble(PyList_GetItem(xU, i));
+  		if (!x_L || !x_U) PyErr_Print();
+  			
+		xldata = (double*)xL->data;
+		xudata = (double*)xU->data;
+		for (i = 0; i< n; i++) {
+			x_L[i] = xldata[i];
+			x_U[i] = xudata[i];
 		}
 		 
   		g_L = (Number*)malloc(sizeof(Number)*m);
-  		g_U = (Number*)malloc(sizeof(Number)*m);
+  		g_U = (Number*)malloc(sizeof(Number)*m);		
+  		if (!g_L || !g_U) PyErr_Print();
+		
+		gldata = (double*)gL->data;
+		gudata = (double*)gU->data;
+		
 		for (i = 0; i< m; i++)
 		{
-			g_L[i] = PyFloat_AsDouble(PyList_GetItem(gL, i));
-			g_U[i] = PyFloat_AsDouble(PyList_GetItem(gU, i));
+			g_L[i] = gldata[i];
+			g_U[i] = gudata[i];
 		}
 
 	  	/* create the IpoptProblem */
@@ -337,19 +420,34 @@ static PyObject *create(PyObject *obj, PyObject *args)
 	return Py_False;
 }
 
+static char PYIPOPT_SOLVE_DOC[] = "solve(x) -> (x, ml, mu, obj)\n \
+        \n \
+        Call ipopt to solve problem created before and return  \n \
+        a tuple that contains final solution x, upper and lower\n \
+        bound for mulitplier and final objective funtion obj. ";
+
 static PyObject *solve(PyObject *self, PyObject *args)
 {
     enum ApplicationReturnStatus status; /* Solve return code */
-    int m, n, i;
+    // int m, n, i;
     
-  	Number* x = NULL;                    /* starting point and solution vector */
+    int i;
+    
+  	// Number* x = NULL;                    /* starting point and solution vector */
 	Number* mult_x_L = NULL;
   	Number* mult_x_U = NULL; 
+  	/* Return values */
+  	
+  	int dX[1];
+  	int dL[1];
+  	
+  	PyArrayObject *x, *mL, *mU;
   	Number obj;                          /* objective value */
   	
-    PyObject* result = Py_False;  	
-	PyObject *x0;
-    if (!PyArg_ParseTuple(args, "O", &x0)) 
+  	PyObject* result = Py_False;  	
+	PyArrayObject *x0;
+    
+    if (!PyArg_ParseTuple(args, "O!", &PyArray_Type, &x0)) 
         return Py_False;
         
 	if (nlp == NULL)
@@ -362,58 +460,57 @@ static PyObject *solve(PyObject *self, PyObject *args)
   		AddIpoptStrOption(nlp, "hessian_approximation","limited-memory");
 
   	/* allocate space for the initial point and set the values */
-  	n = Py_SAFE_DOWNCAST(PyList_Size(x0), Py_ssize_t, int);
-	x = (Number*)malloc(sizeof(Number)*n);
-	for (i =0; i< n; i++)
-		x[i] = PyFloat_AsDouble(PyList_GetItem(x0 , i));
+	dX[0]  = n;
+	printf("n is %d, m is %d\n", n, m);
 	
-  	/* allocate space to store the bound multipliers at the solution */
-  	mult_x_L = (Number*)malloc(sizeof(Number)*n);
-  	mult_x_U = (Number*)malloc(sizeof(Number)*n);
+	x = (PyArrayObject *)PyArray_FromDims( 1, dX, PyArray_DOUBLE );
+	
+	Number* newx0 = (Number*)malloc(sizeof(Number)*n);
+	double* xdata = (double*) x0->data;
+	for (i =0; i< n; i++)
+		newx0[i] = xdata[i];
+	
+  	mL = (PyArrayObject *)PyArray_FromDims( 1, dX, PyArray_DOUBLE );
+	mU = (PyArrayObject *)PyArray_FromDims( 1, dX, PyArray_DOUBLE );
 
-  	/* solve the problem */
-  	printf("I am calling IPOPT\n");
-  	status = IpoptSolve(nlp, x, NULL, &obj, NULL, mult_x_L, mult_x_U, NULL);
-  
+  	status = IpoptSolve(nlp, newx0, NULL, &obj, NULL, (double*)mL->data, (double*)mU->data, NULL);
+ 
   	if (status == Solve_Succeeded) {
-  	  printf("\n\nSolution of the primal variables, x\n");
-  	  for (i=0; i<n; i++) {
-  	    printf("x[%d] = %e\n", i, x[i]); 
-      }
-
-   	  printf("\n\nSolution of the bound multipliers, z_L and z_U\n");
-      for (i=0; i<n; i++) {
-      	printf("z_L[%d] = %e\n", i, mult_x_L[i]); 
-      }
-      for (i=0; i<n; i++) {
-        printf("z_U[%d] = %e\n", i, mult_x_U[i]); 
-      }
-
-      printf("\n\nObjective value\n");
-      printf("f(x*) = %e\n", obj);
-      result = Py_True;  
-  }
-  /* free allocated memory */
-  FreeIpoptProblem(nlp);
-  free(x);
-  free(mult_x_L);
-  free(mult_x_U);
-  return result; 
+  		printf("Problem solved\n");
+		double* xdata = (double*) x->data;
+		for (i =0; i< n; i++)
+			xdata[i] = newx0[i];
+		FreeIpoptProblem(nlp);
+		return Py_BuildValue( "OOOd",
+                              PyArray_Return( x ),
+                              PyArray_Return( mL ),
+                              PyArray_Return( mU ), obj);
+  	}
+  	else {
+  		FreeIpoptProblem(nlp);
+  		return Py_False;
+	}
 }
-
-
 
 /* Begin Python Module code section */
 static PyMethodDef ipoptMethods[] = {
-    { "solve", solve, METH_VARARGS},
-    { "create", create, METH_VARARGS},
+    { "solve", solve, METH_VARARGS, PYIPOPT_SOLVE_DOC},
+    { "create", create, METH_VARARGS, PYIPOPT_CREATE_DOC},
     { NULL, NULL }
 };
+
 
 PyMODINIT_FUNC
 initpyipopt(void)
 {
-   Py_InitModule("pyipopt", ipoptMethods);
+	   Py_InitModule("pyipopt", ipoptMethods);
+	   import_array( );         /* Initialize the Numarray module. */
+		/* A segfalut will occur if I use numarray without this.. 
+	    /* Check for errors */
+	    if (PyErr_Occurred())	
+	 	   Py_FatalError("Unable to initialize module pyipopt");
+	 	   
+    	return;
 }
-
 /* End Python Module code section */
+

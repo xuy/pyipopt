@@ -23,12 +23,11 @@ ProblemName = parse_cmdline(sys.argv[1:])
 
 nlp = amplpy.AmplModel( ProblemName , opts=1)
 
-xl = nlp.Lvar.tolist()
-xu = nlp.Uvar.tolist()
-gl = nlp.Lcon.tolist()
-gu = nlp.Ucon.tolist()
-x0 = nlp.x0.tolist()
-pi0 = nlp.pi0.tolist()
+xl = nlp.Lvar
+xu = nlp.Uvar
+gl = nlp.Lcon
+gu = nlp.Ucon
+x0 = nlp.x0
 
 m = nlp.m
 n = nlp.n
@@ -36,21 +35,21 @@ nnzj = nlp.nnzj
 nnzh = nlp.nnzh
 
 def eval_f(x):
-	return nlp.obj(array(x))
+	return nlp.obj(x)
 
 def eval_grad_f(x):
-	return nlp.grad(array(x)).tolist()	# return ndarray
+	return nlp.grad(x)	# return ndarray
 
 def eval_g(x):
-	return  nlp.cons(array(x)).tolist()
+	return  nlp.cons(x)
 	
 def eval_jac_g(x, flag):
 	if flag:
 		dummy, row1, col1 = nlp.jac(array(x0))
-		return (row1.tolist(), col1.tolist())
+		return (row1, col1)
 	else:
-		j, dummyr, dummyc = nlp.jac(array(x))
-		return j.tolist()
+		j, dummyr, dummyc = nlp.jac(x)
+		return j
 
 """
 dummyh, hrow, hcol = _amplpy.eval_H( nlp.x0, nlp.pi0, 1, 1.0 )
@@ -64,5 +63,6 @@ def eval_h(x, lagrange, obj_factor, flag):
 		temph, dummyr, dummyc = nlp.hess(array(x), array(lagrange), obj_factor)
 		return temph.tolist()
 """
+
 pyipopt.create(n, xl, xu, m, gl, gu, nnzj, 0, eval_f, eval_grad_f, eval_g, eval_jac_g)
-pyipopt.solve(x0)
+print pyipopt.solve(x0)
