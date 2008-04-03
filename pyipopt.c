@@ -36,6 +36,8 @@ static PyObject *eval_grad_f_python = NULL;
 static PyObject *eval_g_python 		= NULL;
 static PyObject *eval_jac_g_python 	= NULL;
 static PyObject *eval_h_python		= NULL;
+static PyObject *apply_new_python	= NULL;
+
 static IpoptProblem nlp = NULL;             /* IpoptProblem */
 static int n;
 static int m;
@@ -62,6 +64,19 @@ Bool eval_f(Index n, Number* x, Bool new_x,
 	PyObject *arrayx = PyArray_FromDimsAndData(1, dims, PyArray_DOUBLE , (char*) x);
 	if (!arrayx) return FALSE;
 
+	if (new_x && apply_new_python) {
+		/* Call the python function to applynew */
+		PyObject* arg1 = Py_BuildValue("(O)", arrayx);
+		PyObject* tempresult = PyObject_CallObject (apply_new_python, arg1);
+		if (!tempresult) {
+			printf("[Error] Python function apply_new returns a None\n");
+			Py_DECREF(arg1);	
+			return FALSE;
+		}
+		Py_DECREF(arg1);
+		Py_DECREF(tempresult);
+	}
+
 	PyObject* arglist = Py_BuildValue("(O)", arrayx);
 	PyObject* result  = PyObject_CallObject (eval_f_python ,arglist);
 
@@ -85,6 +100,19 @@ static Bool eval_grad_f(Index n, Number* x, Bool new_x,
 	
 	PyObject *arrayx = PyArray_FromDimsAndData(1, dims, PyArray_DOUBLE , (char*) x);
 	if (!arrayx) return FALSE;
+	
+	if (new_x && apply_new_python) {
+		/* Call the python function to applynew */
+		PyObject* arg1 = Py_BuildValue("(O)", arrayx);
+		PyObject* tempresult = PyObject_CallObject (apply_new_python, arg1);
+		if (!tempresult) {
+			printf("[Error] Python function apply_new returns a None\n");
+			Py_DECREF(arg1);	
+			return FALSE;
+		}
+		Py_DECREF(arg1);
+		Py_DECREF(tempresult);
+	}	
 	
 	PyObject* arglist = Py_BuildValue("(O)", arrayx);
 	PyArrayObject* result = (PyArrayObject*) PyObject_CallObject (eval_grad_f_python, arglist);
@@ -119,6 +147,19 @@ Bool eval_g(Index n, Number* x, Bool new_x,
 	PyObject *arrayx = PyArray_FromDimsAndData(1, dims, PyArray_DOUBLE , (char*) x);
 	if (!arrayx) return FALSE;
 	
+	if (new_x && apply_new_python) {
+		/* Call the python function to applynew */
+		PyObject* arg1 = Py_BuildValue("(O)", arrayx);
+		PyObject* tempresult = PyObject_CallObject (apply_new_python, arg1);
+		if (!tempresult) {
+			printf("[Error] Python function apply_new returns a None\n");
+			Py_DECREF(arg1);	
+			return FALSE;
+		}
+		Py_DECREF(arg1);
+		Py_DECREF(tempresult);
+	}
+	
 	PyObject* arglist = Py_BuildValue("(O)", arrayx);
 	PyArrayObject* result = (PyArrayObject*) PyObject_CallObject (eval_g_python, arglist);
 	
@@ -127,8 +168,7 @@ Bool eval_g(Index n, Number* x, Bool new_x,
 		
 	if (!PyArray_Check(result))
 		PyErr_Print();
-		
-		
+	
 	double *data = (double*)result->data;
 	int i;
 	for (i = 0; i < m; i++)
@@ -177,7 +217,7 @@ Bool eval_jac_g(Index n, Number *x, Bool new_x,
 		rowd = (long*) row->data;
 		cold = (long*) col->data;
 		
-		printf("I am here, before copy\n");
+		//printf("I am here, before copy\n");
 		for (i = 0; i < nele_jac; i++) {
 			iRow[i] = (int) rowd[i];
 			jCol[i] = (int) cold[i];
@@ -191,6 +231,19 @@ Bool eval_jac_g(Index n, Number *x, Bool new_x,
 		
 		PyObject *arrayx = PyArray_FromDimsAndData(1, dims, PyArray_DOUBLE , (char*) x);
 		if (!arrayx) return FALSE;
+		
+		if (new_x && apply_new_python) {
+			/* Call the python function to applynew */
+			PyObject* arg1 = Py_BuildValue("(O)", arrayx);
+			PyObject* tempresult = PyObject_CallObject (apply_new_python, arg1);
+			if (!tempresult) {
+				printf("[Error] Python function apply_new returns a None\n");
+				Py_DECREF(arg1);	
+				return FALSE;
+			}
+			Py_DECREF(arg1);
+			Py_DECREF(tempresult);
+		}
 		
 		PyObject* arglist = Py_BuildValue("(OO)", arrayx, Py_False);
 		PyArrayObject* result = (PyArrayObject*) 
@@ -220,6 +273,8 @@ static Bool eval_h(Index n, Number *x, Bool new_x, Number obj_factor,
 	if (eval_h_python == NULL)
 		return FALSE;
 	
+	
+	// printf("I am in eval_h\n");
 	if (values == NULL) {
 		PyObject *newx = Py_True;
 		PyObject *objfactor = Py_BuildValue("d", obj_factor);
@@ -230,50 +285,73 @@ static Bool eval_h(Index n, Number *x, Bool new_x, Number obj_factor,
 		if (!PyTuple_Check(result))
 			PyErr_Print();
 			
-		PyObject* row = PyTuple_GetItem(result, 0);	//steal
-		PyObject* col = PyTuple_GetItem(result, 1); //steal
+		PyArrayObject* row = (PyArrayObject*)PyTuple_GetItem(result, 0);	//steal
+		PyArrayObject* col = (PyArrayObject*)PyTuple_GetItem(result, 1); //steal
 
+
+/*
 		if (!PyList_Check(row))
 			PyErr_Print();
 		if (!PyList_Check(col))
 			PyErr_Print();
+*/
 
+		double* rdata = (double*)row->data;
+		double* cdata = (double*)col->data;
+		
 		for (i = 0; i < nele_hess; i++) {
-			PyArg_Parse(PyList_GetItem(row, i), "i", &iRow[i]);
-			PyArg_Parse(PyList_GetItem(col, i), "i", &jCol[i]);
+			iRow[i] = (int)rdata[i];
+			jCol[i] = (int)cdata[i];		
+			// PyArg_Parse(PyList_GetItem(row, i), "i", &iRow[i]);
+			// PyArg_Parse(PyList_GetItem(col, i), "i", &jCol[i]);
 		}
+
 		// newx and other's are just transparent pointer to Py_True
 		Py_DECREF(objfactor);
 		Py_DECREF(result);
 		Py_CLEAR(arglist);
 	}
 	else {	// Assign the hess
-		PyObject *newx = PyList_New(n);
-		PyObject *lagrange = PyList_New(m);
+		// PyObject *newx = PyList_New(n);
+		// PyObject *lagrange = PyList_New(m);
 		PyObject *objfactor = Py_BuildValue("d", obj_factor);
 		
-		for (i=0; i<n; i++) {
-			PyList_SetItem(newx, i, PyFloat_FromDouble(x[i]));
+		int dims[1];
+		dims[0] = n;
+		PyObject *arrayx = PyArray_FromDimsAndData(1, dims, PyArray_DOUBLE , (char*) x);
+		if (!arrayx) return FALSE;
+		
+		if (new_x && apply_new_python) {
+			/* Call the python function to applynew */
+			PyObject* arg1 = Py_BuildValue("(O)", arrayx);
+			PyObject* tempresult = PyObject_CallObject (apply_new_python, arg1);
+			if (!tempresult) {
+				printf("[Error] Python function apply_new returns a None\n");
+				Py_DECREF(arg1);	
+				return FALSE;
+			}
+			Py_DECREF(arg1);
+			Py_DECREF(tempresult);
 		}
 		
-		for (i=0; i<m; i++) {
-			PyList_SetItem(lagrange, i, PyFloat_FromDouble(lambda[i]));
-		}
+		int dims2[1];
+		dims2[0] = m;
+		PyObject *lagrangex = PyArray_FromDimsAndData(1, dims2, PyArray_DOUBLE , (char*) lambda);
+		if (!lagrangex) return FALSE;
 		
-		PyObject* arglist = Py_BuildValue("(OOOO)", newx, objfactor, lagrange, Py_False);
+		PyObject* arglist = Py_BuildValue("(OOOO)", arrayx, lagrangex, objfactor, Py_False);
+		PyArrayObject* result = (PyArrayObject*) PyObject_CallObject (eval_h_python, arglist);
 		
-		PyObject* result = PyObject_CallObject (eval_h_python, arglist);
+		if (!result) printf("[Error] Python function eval_h returns a None\n");
 		
-		// if (!result) printf("Null pointer\n");
-		
-		for (i = 0; i < nele_hess; i++) {
-			values[i] = PyFloat_AsDouble(PyList_GetItem(result, i));
-			// printf("[DEBUG] values[%d] = %f", i, values[i]);
-		}
-		Py_CLEAR(newx);
-		Py_CLEAR(lagrange);
+		double* data = (double*)result->data;
+		for (i = 0; i < nele_hess; i++)
+			values[i] = data[i];
+			
+		Py_CLEAR(arrayx);
+		Py_CLEAR(lagrangex);
 		Py_CLEAR(objfactor);
-		// Py_DECREF(result);
+		Py_DECREF(result);
 		Py_CLEAR(arglist);
 	}	
   	return TRUE;
@@ -320,6 +398,7 @@ static PyObject *create(PyObject *obj, PyObject *args)
 	PyObject *g;
 	PyObject *jacg;
 	PyObject *h = NULL;
+	PyObject *applynew = NULL;
 	//int n;			// Number of var
 	PyArrayObject *xL;
 	PyArrayObject *xU;
@@ -336,7 +415,7 @@ static PyObject *create(PyObject *obj, PyObject *args)
     double result;
     int i;
     // "O!", &PyArray_Type &a_x 
-    if (!PyArg_ParseTuple(args, "iO!O!iO!O!iiOOOO|O", 
+    if (!PyArg_ParseTuple(args, "iO!O!iO!O!iiOOOO|OO", 
     	&n, &PyArray_Type, &xL, 
     		&PyArray_Type, &xU, 
     		&m, 
@@ -344,7 +423,7 @@ static PyObject *create(PyObject *obj, PyObject *args)
     		&PyArray_Type, &gU,
     		&nele_jac, &nele_hess,
     		&f, &gradf, &g, &jacg, 
-    		&h)) 
+    		&h, &applynew)) 
         return Py_False;
         
         
@@ -364,9 +443,13 @@ static PyObject *create(PyObject *obj, PyObject *args)
 		{
 			if (!PyCallable_Check(h))	
 				PyErr_SetString(PyExc_TypeError, 
-        		"Need a callable object for function!");
-        	else 
+        		 "Need a callable object for function h!");
+        	else if (!PyCallable_Check(applynew))
+        		PyErr_SetString(PyExc_TypeError, 
+        		 "Need a callable object for function applynew!");
+        	else
 				eval_h_python	= h;
+				apply_new_python = applynew;
 		}
 		else 
 		{

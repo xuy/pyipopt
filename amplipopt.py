@@ -41,7 +41,7 @@ def eval_grad_f(x):
 	return nlp.grad(x)	# return ndarray
 
 def eval_g(x):
-	return  nlp.cons(x)
+	return nlp.cons(x)
 	
 def eval_jac_g(x, flag):
 	if flag:
@@ -51,18 +51,22 @@ def eval_jac_g(x, flag):
 		j, dummyr, dummyc = nlp.jac(x)
 		return j
 
-"""
-dummyh, hrow, hcol = _amplpy.eval_H( nlp.x0, nlp.pi0, 1, 1.0 )
-print hrow, hcol
 dummyh, hrow, hcol = nlp.hess( nlp.x0, nlp.pi0, 1.0 )
 
 def eval_h(x, lagrange, obj_factor, flag):
 	if flag:
 		return (hrow.tolist(), hcol.tolist())
 	else:
-		temph, dummyr, dummyc = nlp.hess(array(x), array(lagrange), obj_factor)
-		return temph.tolist()
-"""
+		#applynew(x)
+		temph, dummyr, dummyc = nlp.hess(x, lagrange, obj_factor)
+		return temph
+
+def applynew(x):
+	return nlp.applynew(x);
 
 pyipopt.create(n, xl, xu, m, gl, gu, nnzj, 0, eval_f, eval_grad_f, eval_g, eval_jac_g)
 print pyipopt.solve(x0)
+
+pyipopt.create(n, xl, xu, m, gl, gu, nnzj, nnzh, eval_f, eval_grad_f, eval_g, eval_jac_g, eval_h, applynew)
+print pyipopt.solve(x0)
+
