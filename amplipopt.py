@@ -1,5 +1,5 @@
 import pyipopt
-import amplpy, _amplpy
+import amplpy
 import sys, getopt
 from numpy import *
 
@@ -45,7 +45,7 @@ def eval_g(x):
 	
 def eval_jac_g(x, flag):
 	if flag:
-		dummy, row1, col1 = nlp.jac(array(x0))
+		dummy, row1, col1 = nlp.jac(x0)
 		return (row1, col1)
 	else:
 		j, dummyr, dummyc = nlp.jac(x)
@@ -55,7 +55,7 @@ dummyh, hrow, hcol = nlp.hess( nlp.x0, nlp.pi0, 1.0 )
 
 def eval_h(x, lagrange, obj_factor, flag):
 	if flag:
-		return (hrow.tolist(), hcol.tolist())
+		return (hrow, hcol)
 	else:
 		#applynew(x)
 		temph, dummyr, dummyc = nlp.hess(x, lagrange, obj_factor)

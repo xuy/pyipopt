@@ -288,7 +288,6 @@ static Bool eval_h(Index n, Number *x, Bool new_x, Number obj_factor,
 		PyArrayObject* row = (PyArrayObject*)PyTuple_GetItem(result, 0);	//steal
 		PyArrayObject* col = (PyArrayObject*)PyTuple_GetItem(result, 1); //steal
 
-
 /*
 		if (!PyList_Check(row))
 			PyErr_Print();
@@ -301,7 +300,7 @@ static Bool eval_h(Index n, Number *x, Bool new_x, Number obj_factor,
 		
 		for (i = 0; i < nele_hess; i++) {
 			iRow[i] = (int)rdata[i];
-			jCol[i] = (int)cdata[i];		
+			jCol[i] = (int)cdata[i];
 			// PyArg_Parse(PyList_GetItem(row, i), "i", &iRow[i]);
 			// PyArg_Parse(PyList_GetItem(col, i), "i", &jCol[i]);
 		}
@@ -353,7 +352,7 @@ static Bool eval_h(Index n, Number *x, Bool new_x, Number obj_factor,
 		Py_CLEAR(objfactor);
 		Py_DECREF(result);
 		Py_CLEAR(arglist);
-	}	
+	}	                         
   	return TRUE;
 }
 /*  Ends Call back function section */
@@ -393,7 +392,7 @@ static char PYIPOPT_CREATE_DOC[] = "create(n, xl, xu, m, gl, gu, nnzj, nnzh, eva
         	
 static PyObject *create(PyObject *obj, PyObject *args)
 {
-	PyObject *f;
+	PyObject *f; 
 	PyObject *gradf;
 	PyObject *g;
 	PyObject *jacg;
