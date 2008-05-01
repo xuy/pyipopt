@@ -15,7 +15,7 @@
 * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS "AS IS" AND ANY
 * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL THE REGENTS AND CONTRIBUTORS BE LIABLE FOR ANY
+* DISCLAIMEmyowndata. IN NO EVENT SHALL THE REGENTS AND CONTRIBUTORS BE LIABLE FOR ANY
 * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
 * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
@@ -24,341 +24,88 @@
 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /* Version 0.2 All numpy types */
+/* Version 0.3 Change the module to OO 
+	now use nlp = pyipopt.create(xxx)
+		and nlp.solve
+			nlp.close()
+			
+Worklog
+	you can create multiple instance of nlp. [Tested]
+2. To allocate more models in a hooker. Planning to move all the pointers to the 
+	PyObject (callback function in Python) to the user_data field
+	Therefore, the C callback function here can just dispatch it to the python
+	callable object in the user_data [DONE]
+	[We wrap the user_data twice]
+3. Change pyipopt.solve to nlp.solve
+	Construct a new object 	
+*/
 
-#include "Python.h"
-#include "IpStdCInterface.h"
-#include <stdio.h>
+
 #include "hook.h"
-#include "numpy/arrayobject.h"       /* NumPy header */
 
-static PyObject *eval_f_python 		= NULL;
-static PyObject *eval_grad_f_python = NULL;
-static PyObject *eval_g_python 		= NULL;
-static PyObject *eval_jac_g_python 	= NULL;
-static PyObject *eval_h_python		= NULL;
-static PyObject *apply_new_python	= NULL;
-
-static IpoptProblem nlp = NULL;             /* IpoptProblem */
-static int n;
-static int m;
-
-
-/*  Call back function section 
-	Adapters that delegate actual  function to Python 
-	
-	C callback function interface 
-		|- Prepare Python object
-		|- Call Python Function
-		|- Return c type value
-	use pyclear to clean any data I created (I control the ownship)
-	use py-deref to decrease other data (get from other function, etc)
-*/
-
-Bool eval_f(Index n, Number* x, Bool new_x,
-            Number* obj_value, UserDataPtr user_data)
-{
-	
-	int dims[1];
-	dims[0] = n;
-	
-	PyObject *arrayx = PyArray_FromDimsAndData(1, dims, PyArray_DOUBLE , (char*) x);
-	if (!arrayx) return FALSE;
-
-	if (new_x && apply_new_python) {
-		/* Call the python function to applynew */
-		PyObject* arg1 = Py_BuildValue("(O)", arrayx);
-		PyObject* tempresult = PyObject_CallObject (apply_new_python, arg1);
-		if (!tempresult) {
-			printf("[Error] Python function apply_new returns a None\n");
-			Py_DECREF(arg1);	
-			return FALSE;
-		}
-		Py_DECREF(arg1);
-		Py_DECREF(tempresult);
-	}
-
-	PyObject* arglist = Py_BuildValue("(O)", arrayx);
-	PyObject* result  = PyObject_CallObject (eval_f_python ,arglist);
-
-	if (!PyFloat_Check(result))
-		PyErr_Print();
-	
-	*obj_value =  PyFloat_AsDouble(result);
-	Py_DECREF(result);
-  	Py_DECREF(arrayx);
-	Py_CLEAR(arglist);
-  	return TRUE;
-}
-
-static Bool eval_grad_f(Index n, Number* x, Bool new_x,
-                 Number* grad_f, UserDataPtr user_data)
-{
-	if (eval_grad_f_python == NULL) PyErr_Print();
-	
-	int dims[1];
-	dims[0] = n;
-	
-	PyObject *arrayx = PyArray_FromDimsAndData(1, dims, PyArray_DOUBLE , (char*) x);
-	if (!arrayx) return FALSE;
-	
-	if (new_x && apply_new_python) {
-		/* Call the python function to applynew */
-		PyObject* arg1 = Py_BuildValue("(O)", arrayx);
-		PyObject* tempresult = PyObject_CallObject (apply_new_python, arg1);
-		if (!tempresult) {
-			printf("[Error] Python function apply_new returns a None\n");
-			Py_DECREF(arg1);	
-			return FALSE;
-		}
-		Py_DECREF(arg1);
-		Py_DECREF(tempresult);
-	}	
-	
-	PyObject* arglist = Py_BuildValue("(O)", arrayx);
-	PyArrayObject* result = (PyArrayObject*) PyObject_CallObject (eval_grad_f_python, arglist);
-	
-	if (!result) 
-		PyErr_Print();
-		
-	if (!PyArray_Check(result))
-		PyErr_Print();
-	
-	double *data = (double*)result->data;
-	int i;
-	for (i = 0; i < n; i++)
-		grad_f[i] = data[i];
-		
-	Py_DECREF(result);
-  	Py_CLEAR(arrayx);
-	Py_CLEAR(arglist);	
-	return TRUE;
-}
-
-
-Bool eval_g(Index n, Number* x, Bool new_x,
-            Index m, Number* g, UserDataPtr user_data)
-{
-	if (eval_g_python == NULL) 
-		PyErr_Print();
-	
-	int dims[1];
-	dims[0] = n;
-	
-	PyObject *arrayx = PyArray_FromDimsAndData(1, dims, PyArray_DOUBLE , (char*) x);
-	if (!arrayx) return FALSE;
-	
-	if (new_x && apply_new_python) {
-		/* Call the python function to applynew */
-		PyObject* arg1 = Py_BuildValue("(O)", arrayx);
-		PyObject* tempresult = PyObject_CallObject (apply_new_python, arg1);
-		if (!tempresult) {
-			printf("[Error] Python function apply_new returns a None\n");
-			Py_DECREF(arg1);	
-			return FALSE;
-		}
-		Py_DECREF(arg1);
-		Py_DECREF(tempresult);
-	}
-	
-	PyObject* arglist = Py_BuildValue("(O)", arrayx);
-	PyArrayObject* result = (PyArrayObject*) PyObject_CallObject (eval_g_python, arglist);
-	
-	if (!result) 
-		PyErr_Print();
-		
-	if (!PyArray_Check(result))
-		PyErr_Print();
-	
-	double *data = (double*)result->data;
-	int i;
-	for (i = 0; i < m; i++)
-		g[i] = data[i];
-		
-	Py_DECREF(result);
-  	Py_CLEAR(arrayx);
-	Py_CLEAR(arglist);
-	return TRUE;
-}
-
-
-Bool eval_jac_g(Index n, Number *x, Bool new_x,
-                Index m, Index nele_jac,
-                Index *iRow, Index *jCol, Number *values,
-                UserDataPtr user_data)
-{
-	int i;
-	long* rowd = NULL; 
-	long* cold = NULL;
-	
-	int dims[1];
-	dims[0] = n;
-	
-	double *data;
-
-	if (eval_grad_f_python == NULL) 
-		PyErr_Print();
-		
-	if (values == NULL) {		
-		PyObject *newx = Py_True;
-		
-		PyObject* arglist = Py_BuildValue("(OO)", newx, Py_True);	
-		PyObject* result = PyObject_CallObject (eval_jac_g_python, arglist);
-		
-		
-		if (!PyTuple_Check(result))
-			PyErr_Print();
-			
-		PyArrayObject* row = (PyArrayObject*) PyTuple_GetItem(result, 0);
-		PyArrayObject* col = (PyArrayObject*) PyTuple_GetItem(result, 1);
-		
-		if (!row || !col || !PyList_Check(row) || !PyList_Check(col))
-			PyErr_Print();
-
-		rowd = (long*) row->data;
-		cold = (long*) col->data;
-		
-		//printf("I am here, before copy\n");
-		for (i = 0; i < nele_jac; i++) {
-			iRow[i] = (int) rowd[i];
-			jCol[i] = (int) cold[i];
-		}
-		
-		Py_DECREF(result);
-		Py_CLEAR(arglist);
-		
-	}
-	else {	// Assign the jac_g
-		
-		PyObject *arrayx = PyArray_FromDimsAndData(1, dims, PyArray_DOUBLE , (char*) x);
-		if (!arrayx) return FALSE;
-		
-		if (new_x && apply_new_python) {
-			/* Call the python function to applynew */
-			PyObject* arg1 = Py_BuildValue("(O)", arrayx);
-			PyObject* tempresult = PyObject_CallObject (apply_new_python, arg1);
-			if (!tempresult) {
-				printf("[Error] Python function apply_new returns a None\n");
-				Py_DECREF(arg1);	
-				return FALSE;
-			}
-			Py_DECREF(arg1);
-			Py_DECREF(tempresult);
-		}
-		
-		PyObject* arglist = Py_BuildValue("(OO)", arrayx, Py_False);
-		PyArrayObject* result = (PyArrayObject*) 
-					PyObject_CallObject (eval_jac_g_python, arglist);
-		
-		if (!result || !PyArray_Check(result)) 
-			PyErr_Print();
-		
-		data = (double*)result->data;
-		
-		for (i = 0; i < nele_jac; i++)
-			values[i] = data[i];
-		
-		Py_DECREF(result);
-		Py_CLEAR(arrayx);
-		Py_CLEAR(arglist);
-	}
-  	return TRUE;
-}
-
-static Bool eval_h(Index n, Number *x, Bool new_x, Number obj_factor,
-            Index m, Number *lambda, Bool new_lambda,
-            Index nele_hess, Index *iRow, Index *jCol,
-            Number *values, UserDataPtr user_data)
-{
-	int i;
-	if (eval_h_python == NULL)
-		return FALSE;
-	
-	
-	// printf("I am in eval_h\n");
-	if (values == NULL) {
-		PyObject *newx = Py_True;
-		PyObject *objfactor = Py_BuildValue("d", obj_factor);
-		PyObject *lagrange = Py_True;	// Booleans don't need the ref count
-		
-		PyObject* arglist = Py_BuildValue("(OOOO)", newx, lagrange, objfactor, Py_True);
-		PyObject* result = PyObject_CallObject (eval_h_python, arglist);
-		if (!PyTuple_Check(result))
-			PyErr_Print();
-			
-		PyArrayObject* row = (PyArrayObject*)PyTuple_GetItem(result, 0);	//steal
-		PyArrayObject* col = (PyArrayObject*)PyTuple_GetItem(result, 1); //steal
-
+/* Object Section */
 /*
-		if (!PyList_Check(row))
-			PyErr_Print();
-		if (!PyList_Check(col))
-			PyErr_Print();
+PyObject* problem_solve (PyObject* self, PyObject* args)
+{
+		printf("Hello, world\n");
+		Py_INCREF(Py_True);
+		return Py_True;
+}
 */
 
-		double* rdata = (double*)row->data;
-		double* cdata = (double*)col->data;
-		
-		for (i = 0; i < nele_hess; i++) {
-			iRow[i] = (int)rdata[i];
-			jCol[i] = (int)cdata[i];
-			// PyArg_Parse(PyList_GetItem(row, i), "i", &iRow[i]);
-			// PyArg_Parse(PyList_GetItem(col, i), "i", &jCol[i]);
-		}
-
-		// newx and other's are just transparent pointer to Py_True
-		Py_DECREF(objfactor);
-		Py_DECREF(result);
-		Py_CLEAR(arglist);
-	}
-	else {	// Assign the hess
-		// PyObject *newx = PyList_New(n);
-		// PyObject *lagrange = PyList_New(m);
-		PyObject *objfactor = Py_BuildValue("d", obj_factor);
-		
-		int dims[1];
-		dims[0] = n;
-		PyObject *arrayx = PyArray_FromDimsAndData(1, dims, PyArray_DOUBLE , (char*) x);
-		if (!arrayx) return FALSE;
-		
-		if (new_x && apply_new_python) {
-			/* Call the python function to applynew */
-			PyObject* arg1 = Py_BuildValue("(O)", arrayx);
-			PyObject* tempresult = PyObject_CallObject (apply_new_python, arg1);
-			if (!tempresult) {
-				printf("[Error] Python function apply_new returns a None\n");
-				Py_DECREF(arg1);	
-				return FALSE;
-			}
-			Py_DECREF(arg1);
-			Py_DECREF(tempresult);
-		}
-		
-		int dims2[1];
-		dims2[0] = m;
-		PyObject *lagrangex = PyArray_FromDimsAndData(1, dims2, PyArray_DOUBLE , (char*) lambda);
-		if (!lagrangex) return FALSE;
-		
-		PyObject* arglist = Py_BuildValue("(OOOO)", arrayx, lagrangex, objfactor, Py_False);
-		PyArrayObject* result = (PyArrayObject*) PyObject_CallObject (eval_h_python, arglist);
-		
-		if (!result) printf("[Error] Python function eval_h returns a None\n");
-		
-		double* data = (double*)result->data;
-		for (i = 0; i < nele_hess; i++)
-			values[i] = data[i];
-			
-		Py_CLEAR(arrayx);
-		Py_CLEAR(lagrangex);
-		Py_CLEAR(objfactor);
-		Py_DECREF(result);
-		Py_CLEAR(arglist);
-	}	                         
-  	return TRUE;
+void problem_dealloc(problem* self)
+{
+/*
+    FreeIpoptProblem(self->nlp);
+	self->nlp = NULL;	
+	free(self->data);
+*/
+  return;
 }
-/*  Ends Call back function section */
 
-/* Interface to Python */
-// Crate problem
+PyObject* solve (PyObject* self, PyObject* args);
+static char PYIPOPT_SOLVE_DOC[] = "solve(x) -> (x, ml, mu, obj)\n \
+        \n \
+        Call ipopt to solve problem created before and return  \n \
+        a tuple that contains final solution x, upper and lower\n \
+        bound for mulitplier and final objective funtion obj. ";
+
+PyMethodDef problem_methods[] = {
+	{"solve", solve, METH_VARARGS, PYIPOPT_SOLVE_DOC},
+	{NULL, NULL},
+};
+
+PyObject *problem_getattr(PyObject* self, char* attrname)
+{ 
+	PyObject *result = NULL;
+    result = Py_FindMethod(problem_methods, self, attrname);
+    return result;
+}
+
+PyTypeObject IpoptProblemType = {
+    PyObject_HEAD_INIT(&PyType_Type)
+    0,                         /*ob_size*/
+    "pyipopt.Problem",         /*tp_name*/
+    sizeof(problem),    		/*tp_basicsize*/
+    0,                         /*tp_itemsize*/
+    problem_dealloc,           /*tp_dealloc*/
+    0,                         /*tp_print*/
+    problem_getattr,           /*tp_getattr*/
+    0,                         /*tp_setattr*/
+    0,                         /*tp_compare*/
+    0,                         /*tp_repr*/
+    0,                         /*tp_as_number*/
+    0,                         /*tp_as_sequence*/
+    0,                         /*tp_as_mapping*/
+    0,                         /*tp_hash */
+    0,                         /*tp_call*/
+    0,                         /*tp_str*/
+    0,                         /*tp_getattro*/
+    0,                         /*tp_setattro*/
+    0,                         /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT,        /*tp_flags*/
+    "The IPOPT problem object in python", /* tp_doc */
+};
 
 static char PYIPOPT_CREATE_DOC[] = "create(n, xl, xu, m, gl, gu, nnzj, nnzh, eval_f, eval_grad_f, eval_g, eval_jac_g) -> Boolean\n \
         \n \
@@ -398,10 +145,15 @@ static PyObject *create(PyObject *obj, PyObject *args)
 	PyObject *jacg;
 	PyObject *h = NULL;
 	PyObject *applynew = NULL;
-	//int n;			// Number of var
+	
+	DispatchData myowndata;
+	
+	// I have to create a new python object here, return this python object 
+	
+	int n;			// Number of var
 	PyArrayObject *xL;
 	PyArrayObject *xU;
-	//int m;			// Number of con
+	int m;			// Number of con
 	PyArrayObject *gL;
 	PyArrayObject *gU;
 	
@@ -413,6 +165,16 @@ static PyObject *create(PyObject *obj, PyObject *args)
 	
     double result;
     int i;
+    
+    // Init the myowndata field
+    myowndata.eval_f_python = NULL;
+	myowndata.eval_grad_f_python = NULL; 
+	myowndata.eval_g_python = NULL;
+	myowndata.eval_jac_g_python = NULL;
+	myowndata.eval_h_python = NULL;
+	myowndata.apply_new_python = NULL;
+	myowndata.userdata = NULL;
+    
     // "O!", &PyArray_Type &a_x 
     if (!PyArg_ParseTuple(args, "iO!O!iO!O!iiOOOO|OO", 
     	&n, &PyArray_Type, &xL, 
@@ -433,10 +195,12 @@ static PyObject *create(PyObject *obj, PyObject *args)
         	PyErr_SetString(PyExc_TypeError, 
         		"Need a callable object for function!");
     else {
-		eval_f_python 		= f;
-		eval_grad_f_python 	= gradf;
-		eval_g_python 		= g;
-		eval_jac_g_python 	= jacg;
+		myowndata.eval_f_python 		= f;
+		myowndata.eval_grad_f_python 	= gradf;
+		myowndata.eval_g_python 		= g;
+		myowndata.eval_jac_g_python 	= jacg;
+		 printf("D field assigned %p\n", &myowndata);
+		 printf("D field assigned %p\n",myowndata.eval_jac_g_python );
 		
 		if (h !=NULL )
 		{
@@ -447,12 +211,12 @@ static PyObject *create(PyObject *obj, PyObject *args)
         		PyErr_SetString(PyExc_TypeError, 
         		 "Need a callable object for function applynew!");
         	else
-				eval_h_python	= h;
-				apply_new_python = applynew;
+				myowndata.eval_h_python	= h;
+				myowndata.apply_new_python = applynew;
 		}
-		else 
+		else
 		{
-			printf("Ipopt will use Hessian approximation!\n");
+			printf("[PyIPOPT] Ipopt will use Hessian approximation!\n");
 		}
 		
 		Number* x_L = NULL;                  /* lower bounds on x */
@@ -489,36 +253,51 @@ static PyObject *create(PyObject *obj, PyObject *args)
 
 	  	/* create the IpoptProblem */
 	  	
-		nlp = CreateIpoptProblem(n, x_L, x_U, m, g_L, g_U, nele_jac, 0, 
+		IpoptProblem thisnlp = CreateIpoptProblem(n, x_L, x_U, m, g_L, g_U, nele_jac, 0, 
 				0,  &eval_f, &eval_g, &eval_grad_f,  &eval_jac_g, &eval_h);
-		printf("Problem created\n");
+		logger("[PyIPOPT] Problem created");
 		
-  		free(x_L);
+		problem *object = NULL;
+		
+		object = PyObject_NEW(problem , &IpoptProblemType);
+		
+		if (object != NULL)
+    	{
+    		object->nlp = thisnlp;
+    		DispatchData *dp = malloc(sizeof(DispatchData));
+			memcpy((void*)dp, (void*)&myowndata, sizeof(DispatchData));
+			object->data = dp;
+		}
+		
+		else 
+			Py_FatalError("Can't create a new Problem instance");
+				
+      	free(x_L);
   		free(x_U);
   		free(g_L);
   		free(g_U);
-		return Py_True;
+		return (PyObject *)object;
+		// return Py_True;
 	} // end if
 	return Py_False;
 }
 
-static char PYIPOPT_SOLVE_DOC[] = "solve(x) -> (x, ml, mu, obj)\n \
-        \n \
-        Call ipopt to solve problem created before and return  \n \
-        a tuple that contains final solution x, upper and lower\n \
-        bound for mulitplier and final objective funtion obj. ";
 
-static PyObject *solve(PyObject *self, PyObject *args)
+
+PyObject *solve(PyObject *self, PyObject *args)
 {
     enum ApplicationReturnStatus status; /* Solve return code */
-    // int m, n, i;
-    
     int i;
-    
-  	// Number* x = NULL;                    /* starting point and solution vector */
-	Number* mult_x_L = NULL;
+    int n;
+	
+	
+  	Number* mult_x_L = NULL;
   	Number* mult_x_U = NULL; 
   	/* Return values */
+  	problem* temp = (problem*)self;
+  	
+  	IpoptProblem nlp = (IpoptProblem)(temp->nlp);
+  	DispatchData* bigfield = (DispatchData*)(temp->data);
   	
   	int dX[1];
   	int dL[1];
@@ -526,25 +305,40 @@ static PyObject *solve(PyObject *self, PyObject *args)
   	PyArrayObject *x, *mL, *mU;
   	Number obj;                          /* objective value */
   	
-  	PyObject* result = Py_False;  	
+  	PyObject* result = Py_False;
 	PyArrayObject *x0;
-    
-    if (!PyArg_ParseTuple(args, "O!", &PyArray_Type, &x0)) 
-        return Py_False;
-        
-	if (nlp == NULL)
+	
+	PyObject* myuserdata = NULL;
+	
+	if (!PyArg_ParseTuple(args, "O!|O", &PyArray_Type, &x0, &myuserdata)) 
+    {
+		printf("Parameter X0 is expected to be an numpy array type.\n");
 		return Py_False;
+	}
+	
+	if (myuserdata != NULL)
+	{
+		bigfield->userdata = myuserdata;
+		printf("[PyIPOPT] User specified data field to callback function.\n");
+	}
+		
+	if (nlp == NULL)
+	{
+		printf ("nlp objective passed to solve is NULL\n Problem created?\n");
+		return Py_False;
+	}
  	
- 	/* set some options */
+	/* set some options */
   	AddIpoptNumOption(nlp, "tol", 1e-9);
   	AddIpoptStrOption(nlp, "mu_strategy", "adaptive");
-  	if (eval_h_python == NULL)
+  	if (bigfield->eval_h_python == NULL)
   		AddIpoptStrOption(nlp, "hessian_approximation","limited-memory");
 
   	/* allocate space for the initial point and set the values */
+  	n = (int)((PyArrayObject*)x0->dimensions[0]);
+  	// printf("The size of x0 is %d\n", n);
 	dX[0]  = n;
-	printf("n is %d, m is %d\n", n, m);
-	
+	// printf("n is %d, m is %d\n", n, m);
 	x = (PyArrayObject *)PyArray_FromDims( 1, dX, PyArray_DOUBLE );
 	
 	Number* newx0 = (Number*)malloc(sizeof(Number)*n);
@@ -554,43 +348,76 @@ static PyObject *solve(PyObject *self, PyObject *args)
 	
   	mL = (PyArrayObject *)PyArray_FromDims( 1, dX, PyArray_DOUBLE );
 	mU = (PyArrayObject *)PyArray_FromDims( 1, dX, PyArray_DOUBLE );
-
-  	status = IpoptSolve(nlp, newx0, NULL, &obj, NULL, (double*)mL->data, (double*)mU->data, NULL);
+	// printf("Ready to go\n");
+			
+  	status = IpoptSolve(nlp, newx0, NULL, &obj, NULL, (double*)mL->data, (double*)mU->data, (UserDataPtr)bigfield);
+ 	// The final parameter is the userdata (void * type)
  
   	if (status == Solve_Succeeded) {
   		printf("Problem solved\n");
 		double* xdata = (double*) x->data;
 		for (i =0; i< n; i++)
 			xdata[i] = newx0[i];
-		FreeIpoptProblem(nlp);
+			// FreeIpoptProblem(nlp);
 		return Py_BuildValue( "OOOd",
                               PyArray_Return( x ),
                               PyArray_Return( mL ),
                               PyArray_Return( mU ), obj);
   	}
   	else {
-  		FreeIpoptProblem(nlp);
+  		// FreeIpoptProblem(nlp);
   		return Py_False;
 	}
 }
 
+
+static char PYIPOPT_CLOSE_DOC[] = "After all the solving, close the model\n";
+        
+static PyObject *close_model(PyObject *self, PyObject *args)
+{
+	problem* obj = (problem*) self;
+	
+	FreeIpoptProblem(obj->nlp);
+	obj->nlp = NULL;
+	return Py_True;
+}
+
+static char PYTEST[] = "TestCreate\n";
+
+static PyObject *test(PyObject *self, PyObject *args)
+{
+	IpoptProblem thisnlp = NULL;
+  	problem *object = NULL;
+	object = PyObject_NEW(problem , &IpoptProblemType);
+	if (object != NULL)
+    	object->nlp = thisnlp;
+// 	problem *object = problem_new(thisnlp);
+    return (PyObject *)object;
+}
+
 /* Begin Python Module code section */
 static PyMethodDef ipoptMethods[] = {
-    { "solve", solve, METH_VARARGS, PYIPOPT_SOLVE_DOC},
+ //    { "solve", solve, METH_VARARGS, PYIPOPT_SOLVE_DOC},
     { "create", create, METH_VARARGS, PYIPOPT_CREATE_DOC},
+    { "close",  close_model, METH_VARARGS, PYIPOPT_CLOSE_DOC}, 
+    { "test",   test, 		METH_VARARGS, PYTEST},
     { NULL, NULL }
 };
 
 
-PyMODINIT_FUNC
+PyMODINIT_FUNC 
 initpyipopt(void)
 {
-	   Py_InitModule("pyipopt", ipoptMethods);
+
+	   PyObject* m = 
+	   		Py_InitModule3("pyipopt", ipoptMethods, 
+	   			"A hooker between Ipopt and Python");
+	   
 	   import_array( );         /* Initialize the Numarray module. */
-		/* A segfalut will occur if I use numarray without this.. 
-	    /* Check for errors */
-	    if (PyErr_Occurred())	
-	 	   Py_FatalError("Unable to initialize module pyipopt");
+		/* A segfalut will occur if I use numarray without this.. */
+
+	   if (PyErr_Occurred())	
+	 	  Py_FatalError("Unable to initialize module pyipopt");
 	 	   
     	return;
 }
