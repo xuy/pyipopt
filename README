@@ -25,4 +25,8 @@ Another way to fix this is to set AMPL's goff value to make it row-wise
 
 trimloss.nl and test.nl are all test samples. Batch.sh simplifies the compiling task. Later I will add configure and make to this system.
 
-testhook2.py demonstrates the idea. If you provide the pyipopt.create function withe last eval_h callback function, ipopt will delegate the Hessian matrix calculation to you. Otherwise ipopt will use approximate hessian calculation. 
+example.py demonstrates the idea. If you provide the pyipopt.create function withe last eval_h callback function, ipopt will delegate the Hessian matrix calculation to you. Otherwise ipopt will use approximate hessian calculation.
+
+For people that use AMPL, the amplipopt is a very easy client that connect ampl and ipopt. Althought it's also available in the ipopt package, here you can manipulate the model much easier in Python instead of in C/C++;
+
+  

@@ -46,10 +46,6 @@ Worklog
 /* Object Section */
 void problem_dealloc(problem* self)
 {
-   
-   /* FreeIpoptProblem(self->nlp);
-	self->nlp = NULL;	
-	*/	
 	free(self->data);
 	return;
 }
@@ -65,11 +61,101 @@ static char PYIPOPT_SOLVE_DOC[] = "solve(x) -> (x, ml, mu, obj)\n \
 
 static char PYIPOPT_CLOSE_DOC[] = "After all the solving, close the model\n";
 
+static char PYIPOPT_ADD_STR_OPTION_DOC[] = "Set the String option for ipopt. See the document for Ipopt for more information.\n";
+
+
+PyObject *add_str_option(PyObject *self, PyObject *args)
+{
+  	problem* temp = (problem*)self; 	
+  	IpoptProblem nlp = (IpoptProblem)(temp->nlp);
+  	
+  	char* param;
+  	char* value;
+  	
+  	Bool ret;
+  	
+  	if (!PyArg_ParseTuple(args, "ss", &param, &value)) 
+        return Py_False;
+    
+  	ret = AddIpoptStrOption(nlp, (char*) param, value);
+	if (ret) 
+	{
+		Py_INCREF(Py_True);
+		return Py_True;
+	}
+	else 
+	{
+		Py_INCREF(Py_False);
+		return Py_False;
+	}
+}
+
+
+static char PYIPOPT_ADD_INT_OPTION_DOC[] = "Set the Int option for ipopt. See the document for Ipopt for more information.\n";
+
+PyObject *add_int_option(PyObject *self, PyObject *args)
+{
+  	problem* temp = (problem*)self; 	
+  	IpoptProblem nlp = (IpoptProblem)(temp->nlp);
+  	
+  	char* param;
+  	int value;
+  	
+  	Bool ret;
+  	
+  	if (!PyArg_ParseTuple(args, "si", &param, &value))
+        return Py_False;
+    
+  	ret = AddIpoptIntOption(nlp, (char*) param, value);
+	if (ret) 
+	{
+		Py_INCREF(Py_True);
+		return Py_True;
+	}
+	else 
+	{
+		Py_INCREF(Py_False);
+		return Py_False;
+	}
+}
+
+
+static char PYIPOPT_ADD_NUM_OPTION_DOC[] = "Set the Number/double option for ipopt. See the document for Ipopt for more information.\n";
+
+PyObject *add_num_option(PyObject *self, PyObject *args)
+{
+  	problem* temp = (problem*)self; 	
+  	IpoptProblem nlp = (IpoptProblem)(temp->nlp);
+  	
+  	char* param;
+  	double value;
+  	
+  	Bool ret;
+  	
+  	if (!PyArg_ParseTuple(args, "sd", &param, &value))
+        return Py_False;
+     
+  	ret = AddIpoptIntOption(nlp, (char*) param, value);
+	if (ret) 
+	{
+		Py_INCREF(Py_True);
+		return Py_True;
+	}
+	else 
+	{
+		Py_INCREF(Py_False);
+		return Py_False;
+	}
+}
+
+
+
 PyMethodDef problem_methods[] = {
-	{"solve", solve, METH_VARARGS, PYIPOPT_SOLVE_DOC},
+	{ "solve", 	solve, METH_VARARGS, PYIPOPT_SOLVE_DOC},
 	{ "close",  close_model, METH_VARARGS, PYIPOPT_CLOSE_DOC}, 
-	//{""}
-	// {"close", 
+	{ "int_option", add_int_option, METH_VARARGS, PYIPOPT_ADD_INT_OPTION_DOC},
+	{ "str_option", add_str_option, METH_VARARGS, PYIPOPT_ADD_STR_OPTION_DOC},
+	{ "num_option", add_num_option, METH_VARARGS, PYIPOPT_ADD_NUM_OPTION_DOC},
 	{NULL, NULL},
 };
 
