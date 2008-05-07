@@ -244,8 +244,9 @@ static PyObject *create(PyObject *obj, PyObject *args)
 
 	  	/* create the IpoptProblem */
 	  	
-		IpoptProblem thisnlp = CreateIpoptProblem(n, x_L, x_U, m, g_L, g_U, nele_jac, 0, 
-				0,  &eval_f, &eval_g, &eval_grad_f,  &eval_jac_g, &eval_h);
+	  	int C_indexstyle = 0;
+	  	printf("[PyIPOPT] nele_hess is %d\n", nele_hess);
+		IpoptProblem thisnlp = CreateIpoptProblem(n, x_L, x_U, m, g_L, g_U, nele_jac, nele_hess, C_indexstyle,  &eval_f, &eval_g, &eval_grad_f,  &eval_jac_g, &eval_h);
 		logger("[PyIPOPT] Problem created");
 		
 		problem *object = NULL;
@@ -320,11 +321,13 @@ PyObject *solve(PyObject *self, PyObject *args)
 	}
  	
 	/* set some options */
-  	AddIpoptNumOption(nlp, "tol", 1e-4);
+  	AddIpoptNumOption(nlp, "tol", 1e-8);
   	AddIpoptStrOption(nlp, "mu_strategy", "adaptive");
   	if (bigfield->eval_h_python == NULL)
+  	{
   		AddIpoptStrOption(nlp, "hessian_approximation","limited-memory");
-
+		printf("Can't find eval_h callback function\n");
+	}
   	/* allocate space for the initial point and set the values */
   	n = (int)((PyArrayObject*)x0->dimensions[0]);
   	// printf("The size of x0 is %d\n", n);
@@ -391,7 +394,7 @@ static PyMethodDef ipoptMethods[] = {
  //    { "solve", solve, METH_VARARGS, PYIPOPT_SOLVE_DOC},
     { "create", create, METH_VARARGS, PYIPOPT_CREATE_DOC},
     { "close",  close_model, METH_VARARGS, PYIPOPT_CLOSE_DOC}, 
-    { "test",   test, 		METH_VARARGS, PYTEST},
+   // { "test",   test, 		METH_VARARGS, PYTEST},
     { NULL, NULL }
 };
 
