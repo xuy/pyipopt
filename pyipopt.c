@@ -320,7 +320,7 @@ PyObject *solve(PyObject *self, PyObject *args)
 	}
  	
 	/* set some options */
-  	AddIpoptNumOption(nlp, "tol", 1e-9);
+  	AddIpoptNumOption(nlp, "tol", 1e-4);
   	AddIpoptStrOption(nlp, "mu_strategy", "adaptive");
   	if (bigfield->eval_h_python == NULL)
   		AddIpoptStrOption(nlp, "hessian_approximation","limited-memory");
