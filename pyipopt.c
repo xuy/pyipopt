@@ -46,13 +46,16 @@ Worklog
 /* Object Section */
 void problem_dealloc(problem* self)
 {
-    FreeIpoptProblem(self->nlp);
+   
+   /* FreeIpoptProblem(self->nlp);
 	self->nlp = NULL;	
+	*/	
 	free(self->data);
 	return;
 }
 
 PyObject* solve (PyObject* self, PyObject* args);
+PyObject* close_model (PyObject* self, PyObject* args);
 
 static char PYIPOPT_SOLVE_DOC[] = "solve(x) -> (x, ml, mu, obj)\n \
         \n \
@@ -60,8 +63,12 @@ static char PYIPOPT_SOLVE_DOC[] = "solve(x) -> (x, ml, mu, obj)\n \
         a tuple that contains final solution x, upper and lower\n \
         bound for mulitplier and final objective funtion obj. ";
 
+static char PYIPOPT_CLOSE_DOC[] = "After all the solving, close the model\n";
+
 PyMethodDef problem_methods[] = {
 	{"solve", solve, METH_VARARGS, PYIPOPT_SOLVE_DOC},
+	{ "close",  close_model, METH_VARARGS, PYIPOPT_CLOSE_DOC}, 
+	//{""}
 	// {"close", 
 	{NULL, NULL},
 };
@@ -365,12 +372,11 @@ PyObject *solve(PyObject *self, PyObject *args)
 }
 
 
-static char PYIPOPT_CLOSE_DOC[] = "After all the solving, close the model\n";
+
         
-static PyObject *close_model(PyObject *self, PyObject *args)
+PyObject *close_model(PyObject *self, PyObject *args)
 {
 	problem* obj = (problem*) self;
-	
 	FreeIpoptProblem(obj->nlp);
 	obj->nlp = NULL;
 	return Py_True;
@@ -393,7 +399,7 @@ static PyObject *test(PyObject *self, PyObject *args)
 static PyMethodDef ipoptMethods[] = {
  //    { "solve", solve, METH_VARARGS, PYIPOPT_SOLVE_DOC},
     { "create", create, METH_VARARGS, PYIPOPT_CREATE_DOC},
-    { "close",  close_model, METH_VARARGS, PYIPOPT_CLOSE_DOC}, 
+    // { "close",  close_model, METH_VARARGS, PYIPOPT_CLOSE_DOC}, 
    // { "test",   test, 		METH_VARARGS, PYTEST},
     { NULL, NULL }
 };

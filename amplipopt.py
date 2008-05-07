@@ -99,8 +99,7 @@ def applynew(x):
 problem = pyipopt.create(n, xl, xu, m, gl, gu, nnzj, 0, eval_f, eval_grad_f, eval_g, eval_jac_g)
 
 problem.solve(x0)
-
-
+problem.close()
 #nlp = pyipopt.create(n, xl, xu, m, gl, gu, nnzj, nnzh, eval_f, eval_grad_f, eval_g, eval_jac_g, eval_h, applynew)
 #print nlp.solve(x0)
 

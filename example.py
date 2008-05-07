@@ -109,4 +109,5 @@ print eval_h(x0, pi0, 1.0, False)
 print eval_h(x0, pi0, 1.0, True)
 """
 nlp.solve(x0)
+nlp.close()
 
