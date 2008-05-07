@@ -44,26 +44,16 @@ Worklog
 #include "hook.h"
 
 /* Object Section */
-/*
-PyObject* problem_solve (PyObject* self, PyObject* args)
-{
-		printf("Hello, world\n");
-		Py_INCREF(Py_True);
-		return Py_True;
-}
-*/
-
 void problem_dealloc(problem* self)
 {
-/*
     FreeIpoptProblem(self->nlp);
 	self->nlp = NULL;	
 	free(self->data);
-*/
-  return;
+	return;
 }
 
 PyObject* solve (PyObject* self, PyObject* args);
+
 static char PYIPOPT_SOLVE_DOC[] = "solve(x) -> (x, ml, mu, obj)\n \
         \n \
         Call ipopt to solve problem created before and return  \n \
@@ -72,6 +62,7 @@ static char PYIPOPT_SOLVE_DOC[] = "solve(x) -> (x, ml, mu, obj)\n \
 
 PyMethodDef problem_methods[] = {
 	{"solve", solve, METH_VARARGS, PYIPOPT_SOLVE_DOC},
+	// {"close", 
 	{NULL, NULL},
 };
 
@@ -199,24 +190,24 @@ static PyObject *create(PyObject *obj, PyObject *args)
 		myowndata.eval_grad_f_python 	= gradf;
 		myowndata.eval_g_python 		= g;
 		myowndata.eval_jac_g_python 	= jacg;
-		 printf("D field assigned %p\n", &myowndata);
-		 printf("D field assigned %p\n",myowndata.eval_jac_g_python );
+		 // printf("D field assigned %p\n", &myowndata);
+		 // printf("D field assigned %p\n",myowndata.eval_jac_g_python );
 		
 		if (h !=NULL )
 		{
 			if (!PyCallable_Check(h))	
 				PyErr_SetString(PyExc_TypeError, 
-        		 "Need a callable object for function h!");
+        		 "Need a callable object for function h.");
         	else if (!PyCallable_Check(applynew))
         		PyErr_SetString(PyExc_TypeError, 
-        		 "Need a callable object for function applynew!");
+        		 "Need a callable object for function applynew.");
         	else
 				myowndata.eval_h_python	= h;
 				myowndata.apply_new_python = applynew;
 		}
 		else
 		{
-			printf("[PyIPOPT] Ipopt will use Hessian approximation!\n");
+			printf("[PyIPOPT] Ipopt will use Hessian approximation.\n");
 		}
 		
 		Number* x_L = NULL;                  /* lower bounds on x */
@@ -403,7 +394,6 @@ static PyMethodDef ipoptMethods[] = {
     { "test",   test, 		METH_VARARGS, PYTEST},
     { NULL, NULL }
 };
-
 
 PyMODINIT_FUNC 
 initpyipopt(void)

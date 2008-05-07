@@ -34,16 +34,16 @@ n = nlp.n
 nnzj = nlp.nnzj
 nnzh = nlp.nnzh
 
-def eval_f(x):
+def eval_f(x, data = None):
 	return nlp.obj(x)
 
-def eval_grad_f(x):
+def eval_grad_f(x, data= None):
 	return nlp.grad(x)	# return ndarray
 
-def eval_g(x):
+def eval_g(x, data= None):
 	return nlp.cons(x)
 	
-def eval_jac_g(x, flag):
+def eval_jac_g(x, flag, data=None):
 	if flag:
 		dummy, row1, col1 = nlp.jac(x0)
 		return (row1, col1)
@@ -51,8 +51,9 @@ def eval_jac_g(x, flag):
 		j, dummyr, dummyc = nlp.jac(x)
 		return j
 
-dummyh, hrow, hcol = nlp.hess( nlp.x0, nlp.pi0, 1.0 )
+#dummyh, hrow, hcol = nlp.hess( nlp.x0, nlp.pi0, 1.0 )
 
+"""
 def eval_h(x, lagrange, obj_factor, flag):
 	if flag:
 		return (hrow, hcol)
@@ -63,10 +64,11 @@ def eval_h(x, lagrange, obj_factor, flag):
 
 def applynew(x):
 	return nlp.applynew(x);
+"""
+problem = pyipopt.create(n, xl, xu, m, gl, gu, nnzj, 0, eval_f, eval_grad_f, eval_g, eval_jac_g)
 
-pyipopt.create(n, xl, xu, m, gl, gu, nnzj, 0, eval_f, eval_grad_f, eval_g, eval_jac_g)
-print pyipopt.solve(x0)
+print problem.solve(x0)
 
-pyipopt.create(n, xl, xu, m, gl, gu, nnzj, nnzh, eval_f, eval_grad_f, eval_g, eval_jac_g, eval_h, applynew)
-print pyipopt.solve(x0)
+#pyipopt.create(n, xl, xu, m, gl, gu, nnzj, nnzh, eval_f, eval_grad_f, eval_g, eval_jac_g, eval_h, applynew)
+#print pyipopt.solve(x0)
 
