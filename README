@@ -1,12 +1,55 @@
-In order to use this package, you have to have at least those packages on your computer:
-For compile: gcc, ld, 
-Library: nlpy (download it from source-forge), it's painful to compile
-	ipopt
-	numpy
-	pysparse 
-Etc: 	Python, of course
+INSTALL:
 
-Note: you have to patch the nlpy. 
+In order to use this package, you have to have at least those packages on your computer:
+
+	1.	Compiler and linker
+	 		e.g. gcc, ld
+	2.	Ipopt. 
+			Download it from https://projects.coin-or.org/Ipopt
+		
+		Numpy
+			http://numpy.scipy.org/	
+	
+	3.	Python.h
+			Usually you can use apt-get install python-dev (Debian family) or 
+			download the source code from python.org
+			
+
+The install is very simple, just use
+
+	make pyipopt
+
+or 
+	make install [might need superuser previldge as it will copy file to python dir]
+
+[IMPORTANT]
+	Before you type 
+		make install,
+	please exam that all the env variables in the makefile are correctly set. 
+	
+	Then, just issue
+		make install
+
+USE:
+	If everything is OK by now, you can just issue
+	
+		python example.py
+		
+	Ipopt will solve a toy application for you. This python file is self-documented. You can also check the document in the python interactive shell. This module is extensively documented. 
+	
+	Ipopt can also solve problems w/o hessian estimation. example.py demonstrates the idea. If you provide the pyipopt.create function with the eval_h callback function as well as the apply_new callback function, ipopt will delegate the Hessian matrix calculation to you. Otherwise ipopt will use it's own approximate hessian calculation.
+
+
+---------------------skip this section if you don't use AMPL--------------------
+
+Use it with AMPL
+
+For people that use AMPL, the amplipopt is a very easy client that connect ampl and ipopt. Althought it's also available in the ipopt package, here you can manipulate the model much easier in Python instead of in C/C++;
+
+To use that, you have to download nlpy from sf.net and fix a bug in it. 
+
+[BUG FIX IN NLPY]
+
 Edit $NLPYHOME$/Src/_amplpy.c around line 454
 change the code of 
                      pirow[ j ] = (long)i;
@@ -19,14 +62,21 @@ to
 
 It's a bug in NLpy. AMPL return the sparse matrix in col-wise manner
 	[@See Hook your solver with AMPL, page 12, the jacval description]
+
 The sparse matrix is stored as the triple (row, col, values). Nlpy return the row, col tuple in the row-wise manner but AMPL set the values in a col-wise manner according to goff. The way to fix that is to output the row-col tuple also in the col-wise manner. 
 
-Another way to fix this is to set AMPL's goff value to make it row-wise 
+Another way to fix this is to set AMPL's goff value to make it row-wise. 
 
-trimloss.nl and test.nl are all test samples. Batch.sh simplifies the compiling task. Later I will add configure and make to this system.
+trimloss.nl and test.nl are all test samples. You can just
+	python amplipopt.py trimloss.nl 
+to test if everything is OK
 
-example.py demonstrates the idea. If you provide the pyipopt.create function withe last eval_h callback function, ipopt will delegate the Hessian matrix calculation to you. Otherwise ipopt will use approximate hessian calculation.
+-----------------------------------------------------------------------------
 
-For people that use AMPL, the amplipopt is a very easy client that connect ampl and ipopt. Althought it's also available in the ipopt package, here you can manipulate the model much easier in Python instead of in C/C++;
+For bug report and other suggestions, please contact me at 
 
-  
+youxu AT wustl.edu (Change AT to @)
+
+You can simply call me Eric.
+
+
