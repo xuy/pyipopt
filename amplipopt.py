@@ -24,8 +24,7 @@ ProblemName = parse_cmdline(sys.argv[1:])
 nlp = amplpy.AmplModel( ProblemName , opts=1)
 
 xl = nlp.Lvar
-xu = nlp.Uvar
-gl = nlp.Lcon
+xu = nlp.Uvarpr
 gu = nlp.Ucon
 x0 = nlp.x0
 

@@ -56,10 +56,17 @@ def eval_jac_g(x, flag, user_data = None):
 nnzh = 10
 def eval_h(x, lagrange, obj_factor, flag, user_data = None):
 	if flag:
+		#print "Here"
 		hrow = [0, 1, 1, 2, 2, 2, 3, 3, 3, 3]
 		hcol = [0, 0, 1, 0, 1, 2, 0, 1, 2, 3]
-		return (array(hrow), array(hcol))
+		temp =  (array(hcol), array(hrow))
+		print temp
+		return temp
 	else:
+		print "H called"
+		print obj_factor
+		print x
+		print lagrange
 		values = zeros((10), float_)
 		values[0] = obj_factor * (2*x[3])
 		values[1] = obj_factor * (x[3])
@@ -83,12 +90,13 @@ def eval_h(x, lagrange, obj_factor, flag, user_data = None):
 		values[2] += lagrange[1] * 2
 		values[5] += lagrange[1] * 2
 		values[9] += lagrange[1] * 2
+		print values
 		return values
 
 def apply_new(x):
 	return True
 	
-nlp = pyipopt.create(nvar, x_L, x_U, ncon, g_L, g_U, nnzj, 0, eval_f, eval_grad_f, eval_g, eval_jac_g)
+nlp = pyipopt.create(nvar, x_L, x_U, ncon, g_L, g_U, nnzj, nnzh, eval_f, eval_grad_f, eval_g, eval_jac_g, eval_h, apply_new)
 
 x0 = array([1.0, 5.0, 5.0, 1.0])
 pi0 = array([1.0, 1.0])

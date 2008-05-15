@@ -18,9 +18,9 @@ PYTHON_INCLUDE = /usr/local/include/python2.5
 NUMPY_INCLUDE = /usr/lib/python2.5/site-packages/numpy/core/include
 
 pyipopt: callback.c pyipopt.c
-	$(CC) -o pyipopt.o -I$(PYTHON_INCLUDE) -I$(IPOPT_INCLUDE) -I$(NUMPY_INCLUDE) $(CFLAGS) $(LDFLAGS) pyipopt.c callback.c
+	$(CC) -o pyipopt.so -I$(PYTHON_INCLUDE) -I$(IPOPT_INCLUDE) -I$(NUMPY_INCLUDE) $(CFLAGS) $(LDFLAGS) pyipopt.c callback.c
 
 install: pyipopt
 	cp ./pyipopt.so $(PY_DIR)
 clean:
-	rm pyipopt.o 
+	rm pyipopt.so 

@@ -329,10 +329,11 @@ Bool eval_h(Index n, Number *x, Bool new_x, Number obj_factor,
 	int i;
 	int dims[1];
 	int dims2[1];
-
-	if (myowndata->eval_h_python == NULL)
-		return FALSE;
 	
+	if (myowndata->eval_h_python == NULL)
+	{	printf("There is no eval_h assigned");
+		return FALSE;
+	}
 	if (values == NULL) {
 		PyObject *newx = Py_True;
 		PyObject *objfactor = Py_BuildValue("d", obj_factor);
@@ -359,6 +360,7 @@ Bool eval_h(Index n, Number *x, Bool new_x, Number obj_factor,
 		for (i = 0; i < nele_hess; i++) {
 			iRow[i] = (int)rdata[i];
 			jCol[i] = (int)cdata[i];
+			printf("PyIPOPT_DEBUG %d, %d\n", iRow[i], jCol[i]);
 		}
 
 		Py_DECREF(objfactor);
@@ -375,7 +377,7 @@ Bool eval_h(Index n, Number *x, Bool new_x, Number obj_factor,
 		if (!arrayx) return FALSE;
 		
 		if (new_x && myowndata->apply_new_python) {
-			/* Call the python function to applynew */
+			//  Call the python function to applynew 
 			PyObject* arg1 = Py_BuildValue("(O)", arrayx);
 			PyObject* tempresult = 
 				PyObject_CallObject (myowndata->apply_new_python, arg1);
@@ -407,8 +409,9 @@ Bool eval_h(Index n, Number *x, Bool new_x, Number obj_factor,
 		
 		double* tempdata = (double*)result->data;
 		for (i = 0; i < nele_hess; i++)
-			values[i] = tempdata[i];
-			
+		{	values[i] = tempdata[i];
+			printf("PyDebug %f \n", values[i]);
+		}	
 		Py_CLEAR(arrayx);
 		Py_CLEAR(lagrangex);
 		Py_CLEAR(objfactor);
@@ -418,3 +421,5 @@ Bool eval_h(Index n, Number *x, Bool new_x, Number obj_factor,
 	}	                         
   	return TRUE;
 }
+
+
