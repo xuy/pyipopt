@@ -80,3 +80,5 @@ youxu AT wustl.edu (Change AT to @)
 You can simply call me Eric.
 
 
+
+[There might be a bug in the Hessian evalulation, please now don't feed ipopt with your own Hessian evaluation function, I am fixing it]

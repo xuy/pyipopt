@@ -59,14 +59,8 @@ def eval_h(x, lagrange, obj_factor, flag, user_data = None):
 		#print "Here"
 		hrow = [0, 1, 1, 2, 2, 2, 3, 3, 3, 3]
 		hcol = [0, 0, 1, 0, 1, 2, 0, 1, 2, 3]
-		temp =  (array(hcol), array(hrow))
-		print temp
-		return temp
+		return (array(hcol), array(hrow))
 	else:
-		print "H called"
-		print obj_factor
-		print x
-		print lagrange
 		values = zeros((10), float_)
 		values[0] = obj_factor * (2*x[3])
 		values[1] = obj_factor * (x[3])
@@ -90,7 +84,6 @@ def eval_h(x, lagrange, obj_factor, flag, user_data = None):
 		values[2] += lagrange[1] * 2
 		values[5] += lagrange[1] * 2
 		values[9] += lagrange[1] * 2
-		print values
 		return values
 
 def apply_new(x):

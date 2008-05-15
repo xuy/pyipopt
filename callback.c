@@ -354,13 +354,15 @@ Bool eval_h(Index n, Number *x, Bool new_x, Number obj_factor,
 		PyArrayObject* row = (PyArrayObject*)PyTuple_GetItem(result, 0);
 		PyArrayObject* col = (PyArrayObject*)PyTuple_GetItem(result, 1);
 
-		double* rdata = (double*)row->data;
-		double* cdata = (double*)col->data;
+		long* rdata = (long*)row->data;
+		long* cdata = (long*)col->data;
+		
+		// A compiler warning here, from long -> Index(int)
 		
 		for (i = 0; i < nele_hess; i++) {
-			iRow[i] = (int)rdata[i];
-			jCol[i] = (int)cdata[i];
-			printf("PyIPOPT_DEBUG %d, %d\n", iRow[i], jCol[i]);
+			iRow[i] = (Index)rdata[i];
+			jCol[i] = (Index)cdata[i];
+			// printf("PyIPOPT_DEBUG %d, %d\n", iRow[i], jCol[i]);
 		}
 
 		Py_DECREF(objfactor);
@@ -382,7 +384,7 @@ Bool eval_h(Index n, Number *x, Bool new_x, Number obj_factor,
 			PyObject* tempresult = 
 				PyObject_CallObject (myowndata->apply_new_python, arg1);
 			if (!tempresult) {
-				printf("[Error] Python function apply_new returns a None\n");
+//				printf("[Error] Python function apply_new returns a None\n");
 				Py_DECREF(arg1);	
 				return FALSE;
 			}
@@ -410,7 +412,7 @@ Bool eval_h(Index n, Number *x, Bool new_x, Number obj_factor,
 		double* tempdata = (double*)result->data;
 		for (i = 0; i < nele_hess; i++)
 		{	values[i] = tempdata[i];
-			printf("PyDebug %f \n", values[i]);
+			// printf("PyDebug %f \n", values[i]);
 		}	
 		Py_CLEAR(arrayx);
 		Py_CLEAR(lagrangex);
