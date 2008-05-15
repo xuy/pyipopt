@@ -1,0 +1,21 @@
+Version log
+
+	Version 0.1 List works
+
+	Version 0.2 All numpy types */
+	Version 0.3 Change the module to OO 
+	now use nlp = pyipopt.create(xxx)
+		and nlp.solve
+			nlp.close()
+
+	you can create multiple instance of nlp. [Tested]
+
+	Version 0.4
+	
+	To allocate more models in a hooker. Planning to move all the pointers to the 
+	PyObject (callback function in Python) to the user_data field
+	Therefore, the C callback function here can just dispatch it to the python
+	callable object in the user_data [DONE]
+	[We wrap the user_data twice]
+
+	Version 0.5: Bug in H matrix fixed

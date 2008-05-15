@@ -23,30 +23,15 @@
 * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-/* Version 0.2 All numpy types */
-/* Version 0.3 Change the module to OO 
-	now use nlp = pyipopt.create(xxx)
-		and nlp.solve
-			nlp.close()
-			
-Worklog
-	you can create multiple instance of nlp. [Tested]
-2. To allocate more models in a hooker. Planning to move all the pointers to the 
-	PyObject (callback function in Python) to the user_data field
-	Therefore, the C callback function here can just dispatch it to the python
-	callable object in the user_data [DONE]
-	[We wrap the user_data twice]
-3. Change pyipopt.solve to nlp.solve
-	Construct a new object 	
-*/
-
 
 #include "hook.h"
 
 /* Object Section */
-void problem_dealloc(problem* self)
+// sig of this is void foo(PyO*)
+static void problem_dealloc(PyObject* self)
 {
-	free(self->data);
+	problem* temp = (problem*)self;
+	free(temp->data);
 	return;
 }
 
@@ -422,9 +407,11 @@ PyObject *solve(PyObject *self, PyObject *args)
 		printf("Can't find eval_h callback function\n");
 	}
   	/* allocate space for the initial point and set the values */
-  	n = (int)((PyArrayObject*)x0->dimensions[0]);
-  	// printf("The size of x0 is %d\n", n);
-	dX[0]  = n;
+  	
+  	// There is a compiler warning here, don't panic, it's correct 
+  	int* dim = ((PyArrayObject*)x0)->dimensions; 
+  	n = dim[0];
+  	dX[0]  = n;
 	// printf("n is %d, m is %d\n", n, m);
 	x = (PyArrayObject *)PyArray_FromDims( 1, dX, PyArray_DOUBLE );
 	
