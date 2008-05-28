@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -g -fpic -shared
 LDFLAGS = -lipopt -lg2c -lm
-PY_DIR = /usr/lib/python2.5
+PY_DIR = /usr/local/lib/python2.5/site-packages
 
 # Change this to your ipopt include path that includes IpStdCInterface.h 
 IPOPT_INCLUDE = /Project/ThirdParty/ipopt/Ipopt-3.3.3/include/ipopt/

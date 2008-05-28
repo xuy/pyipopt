@@ -73,6 +73,9 @@ Bool eval_f(Index n, Number* x, Bool new_x,
 
 	PyObject* result  = PyObject_CallObject (myowndata->eval_f_python ,arglist);
 
+	if (!result) 
+		PyErr_Print();
+		
 	if (!PyFloat_Check(result))
 		PyErr_Print();
 	
