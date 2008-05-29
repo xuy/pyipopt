@@ -4,6 +4,7 @@ In order to use this package, you have to have at least those packages on your c
 
 	1.	Compiler and linker
 	 		e.g. gcc, ld
+
 	2.	Ipopt. 
 			Download it from https://projects.coin-or.org/Ipopt
 		
@@ -20,7 +21,7 @@ The install is very simple, just use
 	make pyipopt
 
 or 
-	make install [might need superuser previldge as it will copy file to python dir]
+	make install [might need superuser privilege as it will copy file to python dir]
 
 [IMPORTANT]
 	Before you type 
@@ -37,14 +38,14 @@ USE:
 		
 	Ipopt will solve a toy application for you. This python file is self-documented. You can also check the document in the python interactive shell. This module is extensively documented. 
 	
-	Ipopt can also solve problems w/o hessian estimation. example.py demonstrates the idea. If you provide the pyipopt.create function with the eval_h callback function as well as the apply_new callback function, ipopt will delegate the Hessian matrix calculation to you. Otherwise ipopt will use it's own approximate hessian calculation.
+	Ipopt can also solve problems w/o hessian estimation. example.py demonstrates the idea. If you provide the pyipopt.create function with the eval_h callback function as well as the apply_new callback function, ipopt will delegate the Hessian matrix calculation to you. Otherwise Ipopt will use it's own approximate hessian calculation.
 
 
 ---------------------skip this section if you don't use AMPL--------------------
 
 Use it with AMPL
 
-For people that use AMPL, the amplipopt is a very easy client that connect ampl and ipopt. Althought it's also available in the ipopt package, here you can manipulate the model much easier in Python instead of in C/C++;
+For people that use AMPL, the amplipopt is a very easy client that connect ampl and ipopt. Although it's also available in the ipopt package, here you can manipulate the model much easier in Python instead of in C/C++;
 
 To use that, you have to download nlpy from sf.net and fix a bug in it. 
 
@@ -71,7 +72,35 @@ trimloss.nl and test.nl are all test samples. You can just
 	python amplipopt.py trimloss.nl 
 to test if everything is OK
 
+If everything goes OK, please close this poorly written document and enjoy pyipopt.
+-------------------------------------------------------------------------------
+
+----------------------Wait, I have an error......................--------------
+
+Some people reported that they don't have -lg2c or can't find libipopt.so.0. Note that this is not the problem of pyipopt itself. Please install libg2c and copy libipopt.so.0 to the dir where ld can identify. 
+
+Also, some people reported that when they use 
+
+	import pyipopt
+
+they got 
+
+	import pyipopt
+	ImportError: /usr/lib/libipopt.so.0: undefined symbol: _gfortran_XXX
+		
+If you get this error, it is VERY LIKELY that your ipopt library compiling is not correct. (Yes, I know you can use ipopt). Try to go to your 
+
+"$IPOPT_DIR/Ipopt/examples/hs071_c/" directory and do a "make"
+
+
+Please make sure that you can successfully compile and run this example. Pyipopt,as you might know, uses the same mechanism this example uses to call ipopt via C interface. Thus, if you can't go through this step, please don't proceed to send me a bug report, because I have no way to help you solve the problem with IPOPT itself :). My personal suggestion for this is the ipopt mailing list. 
+
+Once you have everything ready and get the ipopt example correct, you can get start to compile pyipopt. 
+
+I do apologize for the lacking of configure/make system. This is under construction. 
+
 -----------------------------------------------------------------------------
+
 
 For bug report and other suggestions, please contact me at 
 

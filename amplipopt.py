@@ -66,7 +66,8 @@ def eval_h(x, lagrange, obj_factor, flag, data = None):
 		return temph
 
 def applynew(x):
-	return nlp.applynew(x);
+	return True
+#	return nlp.applynew(x);
 
 
 #print eval_grad_f
