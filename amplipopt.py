@@ -46,10 +46,10 @@ def eval_grad_f(inx, data= None):
 def eval_g(x, data= None):
 	return nlp.cons(x)
 
+dummy, row1, col1 = nlp.jac(x0)
 		
 def eval_jac_g(x, flag, data=None):
 	if flag:
-		dummy, row1, col1 = nlp.jac(x0)
 		return (row1, col1)
 	else:
 		j, dummyr, dummyc = nlp.jac(x)
@@ -71,7 +71,7 @@ def applynew(x):
 
 
 #print eval_grad_f
-"""
+
 print n, m
 print eval_f(x0)
 assert len(eval_grad_f(x0)) == n
@@ -91,7 +91,6 @@ def gf2(x, data = None):
 
 def f2(x, data = None):
 	return 0
-"""
 
 def applynew(x):
 	return True	
@@ -100,7 +99,8 @@ def applynew(x):
 problem = pyipopt.create(n, xl, xu, m, gl, gu, nnzj, 0, eval_f, eval_grad_f, eval_g, eval_jac_g)
 
 problem.solve(x0)
-#problem.close()
-#nlp = pyipopt.create(n, xl, xu, m, gl, gu, nnzj, nnzh, eval_f, eval_grad_f, eval_g, eval_jac_g, eval_h, applynew)
-#print nlp.solve(x0)
+problem.close()
+
+mynlp = pyipopt.create(n, xl, xu, m, gl, gu, nnzj, nnzh, eval_f, eval_grad_f, eval_g, eval_jac_g, eval_h, applynew)
+print mynlp.solve(x0)
 
