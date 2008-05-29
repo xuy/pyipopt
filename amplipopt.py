@@ -24,7 +24,8 @@ ProblemName = parse_cmdline(sys.argv[1:])
 nlp = amplpy.AmplModel( ProblemName , opts=1)
 
 xl = nlp.Lvar
-xu = nlp.Uvarpr
+xu = nlp.Uvar
+gl = nlp.Lcon
 gu = nlp.Ucon
 x0 = nlp.x0
 
@@ -98,7 +99,7 @@ def applynew(x):
 problem = pyipopt.create(n, xl, xu, m, gl, gu, nnzj, 0, eval_f, eval_grad_f, eval_g, eval_jac_g)
 
 problem.solve(x0)
-problem.close()
+#problem.close()
 #nlp = pyipopt.create(n, xl, xu, m, gl, gu, nnzj, nnzh, eval_f, eval_grad_f, eval_g, eval_jac_g, eval_h, applynew)
 #print nlp.solve(x0)
 
