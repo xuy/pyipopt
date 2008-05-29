@@ -120,7 +120,7 @@ PyObject *add_num_option(PyObject *self, PyObject *args)
   	if (!PyArg_ParseTuple(args, "sd", &param, &value))
         return Py_False;
      
-  	ret = AddIpoptIntOption(nlp, (char*) param, value);
+  	ret = AddIpoptNumOption(nlp, (char*) param, value);
 	if (ret) 
 	{
 		Py_INCREF(Py_True);
@@ -427,7 +427,8 @@ PyObject *solve(PyObject *self, PyObject *args)
   	status = IpoptSolve(nlp, newx0, NULL, &obj, NULL, (double*)mL->data, (double*)mU->data, (UserDataPtr)bigfield);
  	// The final parameter is the userdata (void * type)
  
-  	if (status == Solve_Succeeded) {
+ 	// For status code, see: IpReturnCodes_inc.h 
+  	if (status == Solve_Succeeded || Solved_To_Acceptable_Level ) {
   		printf("Problem solved\n");
 		double* xdata = (double*) x->data;
 		for (i =0; i< n; i++)
@@ -438,8 +439,11 @@ PyObject *solve(PyObject *self, PyObject *args)
                               PyArray_Return( mL ),
                               PyArray_Return( mU ), obj);
   	}
+  	
+  	
   	else {
   		// FreeIpoptProblem(nlp);
+  		printf("Ipopt faied in solving problem instance\n");
   		return Py_False;
 	}
 }
