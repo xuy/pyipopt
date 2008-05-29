@@ -108,6 +108,16 @@ print eval_jac_g(x0, False)
 print eval_h(x0, pi0, 1.0, False)
 print eval_h(x0, pi0, 1.0, True)
 """
-nlp.solve(x0)
+
+x, zl, zu, obj = nlp.solve(x0)
 nlp.close()
+
+print "Solution of the primal variables, x"
+print x
+
+print "Solution of the bound multipliers, z_L and z_U"
+print zl, zu
+
+print "Objective value"
+print "f(x*) =", obj
 
