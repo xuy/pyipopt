@@ -42,7 +42,6 @@ def eval_grad_f(inx, data= None):
 	inx = inx*1.0
 	return nlp.grad(inx)
 
-
 def eval_g(x, data= None):
 	return nlp.cons(x)
 
@@ -66,12 +65,10 @@ def eval_h(x, lagrange, obj_factor, flag, data = None):
 		return temph
 
 def applynew(x):
-	return True
-#	return nlp.applynew(x);
-
+	return True	
 
 #print eval_grad_f
-
+"""
 print n, m
 print eval_f(x0)
 assert len(eval_grad_f(x0)) == n
@@ -91,16 +88,15 @@ def gf2(x, data = None):
 
 def f2(x, data = None):
 	return 0
-
-def applynew(x):
-	return True	
+"""
 	
-#print nnzh
+print "Solving problem with approximate hession calculation now"	
 problem = pyipopt.create(n, xl, xu, m, gl, gu, nnzj, 0, eval_f, eval_grad_f, eval_g, eval_jac_g)
 
 problem.solve(x0)
 problem.close()
 
+print "Solving problem with exact hession calculation now"	
 mynlp = pyipopt.create(n, xl, xu, m, gl, gu, nnzj, nnzh, eval_f, eval_grad_f, eval_g, eval_jac_g, eval_h, applynew)
-print mynlp.solve(x0)
-
+mynlp.solve(x0)
+mynlp.close()
