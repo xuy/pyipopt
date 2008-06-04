@@ -382,7 +382,7 @@ PyObject *solve(PyObject *self, PyObject *args)
 	
 	if (!PyArg_ParseTuple(args, "O!|O", &PyArray_Type, &x0, &myuserdata)) 
     {
-		printf("Parameter X0 is expected to be an numpy array type.\n");
+		printf("ParameteZPOPr X0 is expected to be an numpy array type.\n");
 		return Py_False;
 	}
 	
@@ -405,7 +405,7 @@ PyObject *solve(PyObject *self, PyObject *args)
   	if (bigfield->eval_h_python == NULL)
   	{
   		AddIpoptStrOption(nlp, "hessian_approximation","limited-memory");
-		printf("Can't find eval_h callback function\n");
+		//printf("Can't find eval_h callback function\n");
 	}
   	/* allocate space for the initial point and set the values */
   	
