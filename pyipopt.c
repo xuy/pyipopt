@@ -293,7 +293,7 @@ static PyObject *create(PyObject *obj, PyObject *args)
   		Number* g_L = NULL;                  /* lower bounds on g */
   		Number* g_U = NULL;                  /* upper bounds on g */
 		
-		if (m <=0 || n<=0 )
+		if (m <0 || n<0 )
 			return Py_False;
 		
 		x_L = (Number*)malloc(sizeof(Number)*n);
