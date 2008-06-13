@@ -1,4 +1,4 @@
-/* Copyright (c) 2008, Eric You Xu, Washington Univeristy
+/* Copyright (c) 2008, Eric You Xu, Washington University
 * All rights reserved.
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -8,7 +8,7 @@
 *     * Redistributions in binary form must reproduce the above copyright
 *       notice, this list of conditions and the following disclaimer in the
 *       documentation and/or other materials provided with the distribution.
-*     * Neither the name of the Washington Univeristy nor the
+*     * Neither the name of the Washington University nor the
 *       names of its contributors may be used to endorse or promote products
 *       derived from this software without specific prior written permission.
 *
@@ -40,13 +40,13 @@ PyObject* close_model (PyObject* self, PyObject* args);
 
 static char PYIPOPT_SOLVE_DOC[] = "solve(x) -> (x, ml, mu, obj)\n \
         \n \
-        Call ipopt to solve problem created before and return  \n \
+        Call Ipopt to solve problem created before and return  \n \
         a tuple that contains final solution x, upper and lower\n \
-        bound for mulitplier and final objective funtion obj. ";
+        bound for multiplier and final objective function obj. ";
 
 static char PYIPOPT_CLOSE_DOC[] = "After all the solving, close the model\n";
 
-static char PYIPOPT_ADD_STR_OPTION_DOC[] = "Set the String option for ipopt. See the document for Ipopt for more information.\n";
+static char PYIPOPT_ADD_STR_OPTION_DOC[] = "Set the String option for Ipopt. See the document for Ipopt for more information.\n";
 
 
 PyObject *add_str_option(PyObject *self, PyObject *args)
@@ -59,9 +59,11 @@ PyObject *add_str_option(PyObject *self, PyObject *args)
   	
   	Bool ret;
   	
-  	if (!PyArg_ParseTuple(args, "ss", &param, &value)) 
+  	if (!PyArg_ParseTuple(args, "ss", &param, &value))
+  	{
+     	Py_INCREF (Py_False);
         return Py_False;
-    
+    }
   	ret = AddIpoptStrOption(nlp, (char*) param, value);
 	if (ret) 
 	{
@@ -76,7 +78,7 @@ PyObject *add_str_option(PyObject *self, PyObject *args)
 }
 
 
-static char PYIPOPT_ADD_INT_OPTION_DOC[] = "Set the Int option for ipopt. See the document for Ipopt for more information.\n";
+static char PYIPOPT_ADD_INT_OPTION_DOC[] = "Set the Int option for Ipopt. See the document for Ipopt for more information.\n";
 
 PyObject *add_int_option(PyObject *self, PyObject *args)
 {
@@ -89,6 +91,7 @@ PyObject *add_int_option(PyObject *self, PyObject *args)
   	Bool ret;
   	
   	if (!PyArg_ParseTuple(args, "si", &param, &value))
+  		Py_INCREF(Py_False);
         return Py_False;
     
   	ret = AddIpoptIntOption(nlp, (char*) param, value);
@@ -105,7 +108,7 @@ PyObject *add_int_option(PyObject *self, PyObject *args)
 }
 
 
-static char PYIPOPT_ADD_NUM_OPTION_DOC[] = "Set the Number/double option for ipopt. See the document for Ipopt for more information.\n";
+static char PYIPOPT_ADD_NUM_OPTION_DOC[] = "Set the Number/double option for Ipopt. See the document for Ipopt for more information.\n";
 
 PyObject *add_num_option(PyObject *self, PyObject *args)
 {
@@ -117,8 +120,10 @@ PyObject *add_num_option(PyObject *self, PyObject *args)
   	
   	Bool ret;
   	
-  	if (!PyArg_ParseTuple(args, "sd", &param, &value))
+  	if (!PyArg_ParseTuple(args, "sd", &param, &value)) {
+      	Py_INCREF(Py_False);
         return Py_False;
+     }
      
   	ret = AddIpoptNumOption(nlp, (char*) param, value);
 	if (ret) 
@@ -178,7 +183,7 @@ PyTypeObject IpoptProblemType = {
 
 static char PYIPOPT_CREATE_DOC[] = "create(n, xl, xu, m, gl, gu, nnzj, nnzh, eval_f, eval_grad_f, eval_g, eval_jac_g) -> Boolean\n \
         \n \
-        Create a problem instance and return True if successed  \n \
+        Create a problem instance and return True if succeed  \n \
         \n \
         n is the number of variables, \n \
         xl is the lower bound of x as bounded constraints \n \
@@ -190,20 +195,20 @@ static char PYIPOPT_CREATE_DOC[] = "create(n, xl, xu, m, gl, gu, nnzj, nnzh, eva
         gu is the upper bound of constraints \n \
         	both gl, gu should be one dimension arrays with length m \n \
         nnzj is the number of nonzeros in Jacobi matrix \n \
-        nnzh is the number of nonzeros in Hessian matrix, you can set it to 0 \n \
+        nnzh is the number of non-zeros in Hessian matrix, you can set it to 0 \n \
         \n \
         eval_f is the call back function to calculate objective value, \n \
         	it takes one single argument x as input vector \n \
         eval_grad_f calculates gradient for objective function \n \
         eval_g calculates the constraint values and return an array \n \
-        eval_jac_g calculates the jacobi matrix. It takes two arguments, \n \
+        eval_jac_g calculates the Jacobi matrix. It takes two arguments, \n \
         	the first is the variable x and the second is a Boolean flag \n \
         	if the flag is true, it supposed to return a tuple (row, col) \n \
-        		to indicate the sparse Jacobian matrix's structure. \n \
-        	if the flag is false if returns the valuse of the jacobian matrix \n \
+        		to indicate the sparse Jacobi matrix's structure. \n \
+        	if the flag is false if returns the values of the Jacobi matrix \n \
         		with length nnzj \n \
         eval_h calculates the hessian matrix, it's optional. \n \
-        	if omitted, please set nnzh to 0 and ipopt will use approximated hessian \n \
+        	if omitted, please set nnzh to 0 and Ipopt will use approximated hessian \n \
         	which will make the convergence slower. ";
         	
 static PyObject *create(PyObject *obj, PyObject *args)
@@ -254,8 +259,10 @@ static PyObject *create(PyObject *obj, PyObject *args)
     		&nele_jac, &nele_hess,
     		&f, &gradf, &g, &jacg, 
     		&h, &applynew)) 
+    {
+    	Py_INCREF(Py_False);
         return Py_False;
-        
+    }    
         
     if (!PyCallable_Check(f) 		||
     	!PyCallable_Check(gradf) 	|| 
@@ -293,9 +300,11 @@ static PyObject *create(PyObject *obj, PyObject *args)
   		Number* g_L = NULL;                  /* lower bounds on g */
   		Number* g_U = NULL;                  /* upper bounds on g */
 		
-		if (m <0 || n<0 )
+		if (m <0 || n<0 ) {
+			Py_INCREF(Py_False);
 			return Py_False;
-		
+		}
+			
 		x_L = (Number*)malloc(sizeof(Number)*n);
   		x_U = (Number*)malloc(sizeof(Number)*n);
   		if (!x_L || !x_U) PyErr_Print();
@@ -320,7 +329,7 @@ static PyObject *create(PyObject *obj, PyObject *args)
 			g_U[i] = gudata[i];
 		}
 
-	  	/* create the IpoptProblem */
+	  	/* create the Ipopt Problem */
 	  	
 	  	int C_indexstyle = 0;
 	  	printf("[PyIPOPT] nele_hess is %d\n", nele_hess);
@@ -349,6 +358,7 @@ static PyObject *create(PyObject *obj, PyObject *args)
 		return (PyObject *)object;
 		// return Py_True;
 	} // end if
+	Py_INCREF(Py_False);
 	return Py_False;
 }
 
@@ -382,7 +392,8 @@ PyObject *solve(PyObject *self, PyObject *args)
 	
 	if (!PyArg_ParseTuple(args, "O!|O", &PyArray_Type, &x0, &myuserdata)) 
     {
-		printf("ParameteZPOPr X0 is expected to be an numpy array type.\n");
+		printf("Parameter X0 is expected to be an numpy array type.\n");
+		Py_INCREF(Py_False);
 		return Py_False;
 	}
 	
@@ -395,6 +406,7 @@ PyObject *solve(PyObject *self, PyObject *args)
 	if (nlp == NULL)
 	{
 		printf ("nlp objective passed to solve is NULL\n Problem created?\n");
+		Py_INCREF(Py_False);
 		return Py_False;
 	}
  	
@@ -435,6 +447,9 @@ PyObject *solve(PyObject *self, PyObject *args)
 		for (i =0; i< n; i++)
 			xdata[i] = newx0[i];
 			// FreeIpoptProblem(nlp);
+		
+		if (newx0) free(newx0);
+		
 		return Py_BuildValue( "OOOd",
                               PyArray_Return( x ),
                               PyArray_Return( mL ),
@@ -445,6 +460,7 @@ PyObject *solve(PyObject *self, PyObject *args)
   	else {
   		// FreeIpoptProblem(nlp);
   		printf("Ipopt faied in solving problem instance\n");
+  		Py_INCREF(Py_False);
   		return Py_False;
 	}
 }
@@ -457,6 +473,7 @@ PyObject *close_model(PyObject *self, PyObject *args)
 	problem* obj = (problem*) self;
 	FreeIpoptProblem(obj->nlp);
 	obj->nlp = NULL;
+	Py_INCREF(Py_True);
 	return Py_True;
 }
 
@@ -491,11 +508,11 @@ initpyipopt(void)
 	   			"A hooker between Ipopt and Python");
 	   
 	   import_array( );         /* Initialize the Numarray module. */
-		/* A segfalut will occur if I use numarray without this.. */
+		/* A segfault will occur if I use numarray without this.. */
 
 	   if (PyErr_Occurred())	
 	 	  Py_FatalError("Unable to initialize module pyipopt");
-	 	   
+	 	  
     	return;
 }
 /* End Python Module code section */

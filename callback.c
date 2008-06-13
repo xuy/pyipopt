@@ -265,6 +265,7 @@ Bool eval_jac_g(Index n, Number *x, Bool new_x,
 			jCol[i] = (Index) cold[i];
 			//printf("%d Row %d, Col %d\n", i, iRow[i], jCol[i]);
 		}
+		Py_CLEAR(arrayx);
 		Py_DECREF(result);
 		Py_CLEAR(arglist);
 		logger("[Callback:R] eval_jac_g(1)");	

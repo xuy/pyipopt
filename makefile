@@ -1,5 +1,6 @@
 CC = gcc
 CFLAGS = -O3 -fpic -shared
+DFLAGS = -fpic -shared
 LDFLAGS = -lipopt -lg2c -lm
 PY_DIR = /usr/local/lib/python2.5/site-packages
 
@@ -21,7 +22,7 @@ pyipopt: callback.c pyipopt.c
 	$(CC) -o pyipopt.so -I$(PYTHON_INCLUDE) -I$(IPOPT_INCLUDE) -I$(NUMPY_INCLUDE) $(CFLAGS) $(LDFLAGS) pyipopt.c callback.c
 
 debug: callback.c pyipopt.c
-	$(CC) -o pyipopt.so -I$(PYTHON_INCLUDE) -I$(IPOPT_INCLUDE) -I$(NUMPY_INCLUDE) $(CFLAGS) $(LDFLAGS) pyipopt_debug.c callback.c
+	$(CC) -g -o pyipopt.so -I$(PYTHON_INCLUDE) -I$(IPOPT_INCLUDE) -I$(NUMPY_INCLUDE) $(DFLAGS) $(LDFLAGS) pyipopt_debug.c callback.c
 
 debug_install: debug
 	cp ./pyipopt.so $(PY_DIR)
