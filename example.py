@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-# Author: Eric Xu. Washingnton University
-#  The same model as ipopt/examples/hs071
+# Author: Eric Xu. Washington University
+#  The same model as Ipopt/examples/hs071
 
 import pyipopt
 from numpy import *
@@ -52,11 +52,9 @@ def eval_jac_g(x, flag, user_data = None):
 					2.0*x[2], 
 					2.0*x[3] ])
 		
-""" This function might be buggy, """
 nnzh = 10
 def eval_h(x, lagrange, obj_factor, flag, user_data = None):
 	if flag:
-		#print "Here"
 		hrow = [0, 1, 1, 2, 2, 2, 3, 3, 3, 3]
 		hcol = [0, 0, 1, 0, 1, 2, 0, 1, 2, 3]
 		return (array(hcol), array(hrow))
