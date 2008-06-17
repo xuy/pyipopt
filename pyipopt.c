@@ -15,7 +15,7 @@
 * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS "AS IS" AND ANY
 * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMEmyowndata. IN NO EVENT SHALL THE REGENTS AND CONTRIBUTORS BE LIABLE FOR ANY
+* DISCLAIMED. IN NO EVENT SHALL THE REGENTS AND CONTRIBUTORS BE LIABLE FOR ANY
 * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
 * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
@@ -260,6 +260,7 @@ static PyObject *create(PyObject *obj, PyObject *args)
     		&f, &gradf, &g, &jacg, 
     		&h, &applynew)) 
     {
+    	printf("[PyIPOPT] Wrong Argument, return false\n");
     	Py_INCREF(Py_False);
         return Py_False;
     }    
@@ -301,6 +302,7 @@ static PyObject *create(PyObject *obj, PyObject *args)
   		Number* g_U = NULL;                  /* upper bounds on g */
 		
 		if (m <0 || n<0 ) {
+			printf("[PyIPOPT] m or n can't be negative, return false\n");
 			Py_INCREF(Py_False);
 			return Py_False;
 		}
@@ -335,6 +337,8 @@ static PyObject *create(PyObject *obj, PyObject *args)
 	  	printf("[PyIPOPT] nele_hess is %d\n", nele_hess);
 		IpoptProblem thisnlp = CreateIpoptProblem(n, x_L, x_U, m, g_L, g_U, nele_jac, nele_hess, C_indexstyle,  &eval_f, &eval_g, &eval_grad_f,  &eval_jac_g, &eval_h);
 		logger("[PyIPOPT] Problem created");
+		
+		// AddIpoptStrOption(thisnlp, "max_iter", 200);
 		
 		problem *object = NULL;
 		
@@ -392,7 +396,7 @@ PyObject *solve(PyObject *self, PyObject *args)
 	
 	if (!PyArg_ParseTuple(args, "O!|O", &PyArray_Type, &x0, &myuserdata)) 
     {
-		printf("Parameter X0 is expected to be an numpy array type.\n");
+		printf("Parameter X0 is expected to be an Numpy array type.\n");
 		Py_INCREF(Py_False);
 		return Py_False;
 	}
@@ -450,7 +454,8 @@ PyObject *solve(PyObject *self, PyObject *args)
 		
 		if (newx0) free(newx0);
 		
-		return Py_BuildValue( "OOOd",
+		/* A fix for the mem-leak problem */
+		return Py_BuildValue( "NNNd",
                               PyArray_Return( x ),
                               PyArray_Return( mL ),
                               PyArray_Return( mU ), obj);
