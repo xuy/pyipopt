@@ -2,8 +2,8 @@ Version log
 
 	Version 0.1 List works
 
-	Version 0.2 All numpy types */
-	Version 0.3 Change the module to OO 
+	Version 0.2 All Numpy types */
+	Version 0.3 Change the module interface to allocate more nlp instances instead of one
 	now use nlp = pyipopt.create(xxx)
 		and nlp.solve
 			nlp.close()
@@ -19,3 +19,10 @@ Version log
 	[We wrap the user_data twice]
 
 	Version 0.5: Bug in H matrix fixed
+
+	Version 0.5.1: some stupid spelling error in the source file and comments fixed
+
+	Version 0.6: memleak fixed. (at least valgrind won't complain)
+
+	Version 0.7: Fixed a bug for the value of m and n, a bug for reference counting.
+
