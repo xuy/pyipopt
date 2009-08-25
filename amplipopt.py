@@ -96,7 +96,7 @@ problem = pyipopt.create(n, xl, xu, m, gl, gu, nnzj, 0, eval_f, eval_grad_f, eva
 problem.solve(x0)
 problem.close()
 
-print "Solving problem with exact hession calculation now"	
-mynlp = pyipopt.create(n, xl, xu, m, gl, gu, nnzj, nnzh, eval_f, eval_grad_f, eval_g, eval_jac_g, eval_h, applynew)
-mynlp.solve(x0)
-mynlp.close()
+#print "Solving problem with exact hession calculation now"	
+#mynlp = pyipopt.create(n, xl, xu, m, gl, gu, nnzj, nnzh, eval_f, eval_grad_f, eval_g, eval_jac_g, eval_h, applynew)
+#mynlp.solve(x0)
+#mynlp.close()

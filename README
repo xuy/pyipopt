@@ -92,6 +92,12 @@ If you get this error, it is VERY LIKELY that your ipopt library compiling is no
 
 "$IPOPT_DIR/Ipopt/examples/hs071_c/" directory and do a "make"
 
+Some one also reported that you have to use 
+
+-lipopt -lg2c -lm -lblas -llapack -lgfortran 
+
+in the LDFLAGS line in the makefile. I didn't add it because some people don't have libgfortran, instead, they use other libraries. Adding any unnecessary lines to the makefile will give other people nightmare. 
+
 
 Please make sure that you can successfully compile and run this example. Pyipopt,as you might know, uses the same mechanism this example uses to call ipopt via C interface. Thus, if you can't go through this step, please don't proceed to send me a bug report, because I have no way to help you solve the problem with IPOPT itself :). My personal suggestion for this is the ipopt mailing list. 
 
