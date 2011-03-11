@@ -1,3 +1,5 @@
+This version is currently broken, wait for a few hours, I will fix it, I promise
+
 INSTALL:
 
 In order to use this package, you have to get the following packages ready on your computer:
@@ -37,6 +39,10 @@ To see if you have pyipopy ready, use the following command under the pyipopt's 
 	
 example.py contains a toy optimization problem. If everything is OK, pyipopt will call Ipopt and solve it for you. 
 This python file is self-documented and can be used as an example for writing your own optimization problems in python. 
+
+pyipopt will be compiled to a python module. Therefore, you can inspect it by using standard python commands like dir or help. All functions in pyipopt are well documented. 
+
+
 
 Ipopt can also solve problems w/o hessian estimation. example.py demonstrates the idea. If you provide the pyipopt.create function with the eval_h callback function as well as the apply_new callback function, ipopt will delegate the Hessian matrix calculation to you. Otherwise Ipopt will use it's own approximate hessian calculation.
 

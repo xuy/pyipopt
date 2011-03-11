@@ -48,7 +48,7 @@ def eval_grad_f(x, user_data=None):
 
 def eval_g(x, user_data=None):
 	return  nlp.cons(array(x)).tolist()
-	
+
 def eval_jac_g(x, flag, user_data=None):
 	if flag:
 		dummy, row1, col1 = nlp.jac(array(x0))

@@ -25,6 +25,15 @@
             Index nele_hess, Index *iRow, Index *jCol,
             Number *values, UserDataPtr user_data);
 
+
+ Bool eval_intermediate_callback(Index alg_mod,
+	    Index iter_count, Number obj_value,
+	    Number inf_pr, Number inf_du,
+			   Number mu, Number d_norm,
+			   Number regularization_size,
+			   Number alpha_du, Number alpha_pr,
+			   Index ls_trials, UserDataPtr data);
+
 typedef struct {
 	PyObject *eval_f_python;
 	PyObject *eval_grad_f_python; 
@@ -32,12 +41,9 @@ typedef struct {
 	PyObject *eval_jac_g_python;
 	PyObject *eval_h_python;
 	PyObject *apply_new_python;
+	PyObject *eval_intermediate_callback_python;
 	PyObject* userdata;
 } DispatchData;
-
-// DispatchData myowndata;
-
-// static IpoptProblem nlp = NULL;             /* IpoptProblem */
 
 void logger(char* str);
 
