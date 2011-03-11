@@ -106,23 +106,18 @@ print eval_jac_g(x0, False)
 print eval_h(x0, pi0, 1.0, False)
 print eval_h(x0, pi0, 1.0, True)
 """
-print nlp
 print "Going to call solve"
-print dir(nlp)
 print x0
-# x, zl, zu, obj = nlp.solve(x0)
-result = nlp.solve(x0)
-
-print "Result is"
-print result
+x, zl, zu, obj, status = nlp.solve(x0)
+# import pdb; pdb.set_trace()
 nlp.close()
 
 print "Solution of the primal variables, x"
-#print x
+print x
 
 print "Solution of the bound multipliers, z_L and z_U"
-#print zl, zu
+print zl, zu
 
 print "Objective value"
-#print "f(x*) =", obj
+print "f(x*) =", obj
 

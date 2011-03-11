@@ -1,5 +1,3 @@
-This version is currently broken, wait for a few hours, I will fix it, I promise
-
 INSTALL:
 
 In order to use this package, you have to get the following packages ready on your computer:
@@ -72,6 +70,16 @@ Solution:
     check if your hs071_c example work. It is very likely that your ipopt library is not correctly compiled. 
 
 
+	import pyipopt
+	ImportError: /usr/lib/libipopt.so.0: undefined symbol: ma19ad_
+
+Solution:
+	First, use 
+		nm /usr/lib/libipopt.so.0 | grep ma19ad_ 
+	to see if it is marked with U. It should. This means that libipopt.so.0 is not aware of libcoinhsl.so.0. You can fix this
+	by adding -lcoinhsl in the makefile of pyipopt. It seems to me that this happens in the recent versions of ipopt. Eventually
+	pyipopt will have a better building mechanism, and I will fix this soon. 
+
 2. Don't have g2c library
     
 Solution:
@@ -81,6 +89,8 @@ Solution:
 
 Solution:
     find it and copy it to a folder that ld can access
+
+
 
 Some one also reported that -lfortran is a necessary flag to compile pyipopt. I didn't use it personally. In case you can't get through, try it. 
 

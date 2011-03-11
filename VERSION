@@ -25,4 +25,5 @@ Version log
 	Version 0.6: memleak fixed. (at least valgrind won't complain)
 
 	Version 0.7: Fixed a bug for the value of m and n, a bug for reference counting.
-
+	
+	Version 0.8: Merged patches submitted by others, now supporting intermediate_callback

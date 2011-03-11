@@ -51,7 +51,8 @@ static char     PYIPOPT_SOLVE_DOC[] = "solve(x) -> (x, ml, mu, obj)\n \
        \n                                                        \
        Call Ipopt to solve problem created before and return  \n \
        a tuple that contains final solution x, upper and lower\n \
-       bound for multiplier and final objective function obj. ";
+       bound for multiplier, final objective function obj, \n \
+       and the return status of ipopt. \n";
 
 static char     PYIPOPT_SET_INTERMEDIATE_CALLBACK_DOC[] = "set_intermediate_callback(callback_function)\n \
        \n                                                              \
@@ -521,7 +522,7 @@ solve(PyObject * self, PyObject * args)
 
 
 
-	freopen("/dev/null", "w", stdout);
+	// freopen("/dev/null", "w", stdout);
 	status = IpoptSolve(nlp, newx0, NULL, &obj, NULL, (double *) mL->data, (double *) mU->data, (UserDataPtr) bigfield);
 	/* The final parameter is the userdata (void * type) */
 
