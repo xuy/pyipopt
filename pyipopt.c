@@ -1,5 +1,4 @@
-/*
- * Copyright (c) 2008, Eric You Xu, Washington University All rights
+/* Copyright (c) 2008, Eric You Xu, Washington University All rights
  * reserved. Redistribution and use in source and binary forms, with or
  * without modification, are permitted provided that the following conditions
  * are met:
@@ -27,9 +26,10 @@
  */
 
 
-/*
-Modifications made by OpenMDAO at NASA Glenn Research Center, 2010 and 2011
-*/
+/* 
+ * Modifications made by 
+ * OpenMDAO at NASA Glenn Research Center, 2010 and 2011
+ */
 
 #include "hook.h"
 

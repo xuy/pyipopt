@@ -26,17 +26,13 @@
  * SUCH DAMAGE.
  */
 
-/* This file contains five call-back functions for IPOPT */
-/*
- * For the interface of these five functions, check Ipopt's document: Ipopt C
- * Interface
+/* 
+ * Added "eval_intermediate_callback" by 
+ * OpenMDAO at NASA Glenn Research Center, 2010 and 2011
  */
-/* TODO: change the apply_new interface */
 
 #include "hook.h"
-
 #include <unistd.h>
-
 
 void 
 logger(char *str)
