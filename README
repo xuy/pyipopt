@@ -1,4 +1,6 @@
-INSTALL:
+==================
+==    INSTALL  ===
+==================
 
 In order to use this package, you have to get the following packages ready on your computer:
 
@@ -23,30 +25,39 @@ then
 
 	make install 
     
-If you use make install, you might need to process superuser privilege, as it will copy file to python directory 
+If you use make install, you might need to process with superuser privilege, as it will copy file to the Python directory 
 
 [IMPORTANT]
 
-    Although I try very hard to make Makefile as generic as possible, there might still be some env variables in the Makefile that do not match your computer's configuration. 
-    Therefore, you might want to verify that all the env variables in the Makefile are correctly set. 
+    Although I try very hard to make Makefile as generic as possible, there might still be some env variables in the Makefile that do not match your computer's configuration. Therefore, you might want to verify that all the env variables in the Makefile are correctly set. 
 
+
+==================
+==      TEST   ===
+==================
 
 To see if you have pyipopy ready, use the following command under the pyipopt's directory. 
 
 		python example.py
 	
-example.py contains a toy optimization problem. If everything is OK, pyipopt will call Ipopt and solve it for you. 
-This python file is self-documented and can be used as an example for writing your own optimization problems in python. 
+The file "example.py" contains a toy optimization problem. If everything is OK, pyipopt will invoke Ipopt to solve it for you. 
+This python file is self-documented and can be used as a templete for writing your own optimization problems. 
 
-pyipopt will be compiled to a python module. Therefore, you can inspect it by using standard python commands like dir or help. All functions in pyipopt are well documented. 
+Pyipopt is a legitimate Python module, you can inspect it by using standard Python commands like "dir" or "help". All functions in pyipopt are well documented. 
+
+Since Hessian estimation is usually tedious, Ipopt can solve problems without Hessian estimation. Pyipopt also supports this feature. The file "example.py" demonstrates the idea. If you provide the pyipopt.create function with an "eval_h" callback function as well as the "apply_new" callback function, Ipopt will delegate the Hessian matrix calculation to your function (otherwise Ipopt will approximate Hessian for you).
 
 
+==================
+= I HAVE AN ERROR=
+==================
 
-Ipopt can also solve problems w/o hessian estimation. example.py demonstrates the idea. If you provide the pyipopt.create function with the eval_h callback function as well as the apply_new callback function, ipopt will delegate the Hessian matrix calculation to you. Otherwise Ipopt will use it's own approximate hessian calculation.
+Before reporting any errors as bugs to me, please do the following steps to diagnose the error.
+You might be able to fix it really quick if you know where the problem is. 
 
-----------------------Wait, I have an error......................--------------
+Step 1. [VERY IMPORTANT]
 
-pyipopt relies the C interface provided by Ipopt to do all the work. Therefore, you might want to check 
+Pyipopt relies the C interface provided by Ipopt to do all the work. Therefore, you might want to check 
 if your C interface is correctly installed. I do understand that some folks can actually run ipopt executable, but 
 it doesn't mean that your Ipopt C Interface is correctly installed (as a library). 
 
@@ -57,46 +68,73 @@ A good way to check this is to go to the
 directory and issue a "make" to see if you can compile and run this toy example. 
 Pyipopt, as you might know, uses the same mechanism this example uses to call ipopt via its C interface. 
 
-It is rather tricky to compile pyipopt because of so many dependencies. 
 
-I put some representative solutions to the dependency problem as follows:
+Step 2: 
 
-1. Error in using Pyipopt
+I list a couple of representative errors that may happen after 
+passing Step 1. Please make sure that you have done Step 1 successfully, 
+otherwise it is meaningless to do the following. 
 
+--------------------------------------------------------
+* Error:
+	import pyipopt
+	ImportError: can not find  libipopt.so.0
+
+* Solution:
+    find it and copy it to a folder that ld can access
+--------------------------------------------------------
+
+
+--------------------------------------------------------
+* Error:
 	import pyipopt
 	ImportError: /usr/lib/libipopt.so.0: undefined symbol: _gfortran_XXX
 
-Solution: 
+* Solution: 
     check if your hs071_c example work. It is very likely that your ipopt library is not correctly compiled. 
+--------------------------------------------------------
 
 
+--------------------------------------------------------
+* Error:
+	import pyipopt
+	ImportError: /usr/lib/libipopt.so.0: undefined symbol: SetIntermediateCallback
+
+* Solution:
+	SetIntermediateCallback is a function added since Ipopt 3.9.1. (see https://projects.coin-or.org/Ipopt/changeset/1830 )
+	Make sure you have an Ipopt version >= 3.9.1
+--------------------------------------------------------
+
+--------------------------------------------------------
+* Error:
 	import pyipopt
 	ImportError: /usr/lib/libipopt.so.0: undefined symbol: ma19ad_
 
-Solution:
+* Solution:
 	First, use 
 		nm /usr/lib/libipopt.so.0 | grep ma19ad_ 
 	to see if it is marked with U. It should. This means that libipopt.so.0 is not aware of libcoinhsl.so.0. You can fix this
 	by adding -lcoinhsl in the makefile of pyipopt. It seems to me that this happens in the recent versions of ipopt. Eventually
 	pyipopt will have a better building mechanism, and I will fix this soon. 
-
-2. Don't have g2c library
-    
-Solution:
-    install libg2c
-
-3. Can't find libipopt.so.0
-
-Solution:
-    find it and copy it to a folder that ld can access
+--------------------------------------------------------
 
 
-
-Some one also reported that -lfortran is a necessary flag to compile pyipopt. I didn't use it personally. In case you can't get through, try it. 
-
-I do apologize for the lacking of configure/make system. This is under construction. 
-
------------------------------------------------------------------------------
+--------------------------------------------------------
+* Error:
+	import pyipopt
+	ImportError: /usr/lib/libipopt.so.0: undefined symbol: SomeKindOfSymbol
+	
+* Solution:
+	I can assure you that it is NOT a bug of pyipopt. It is very likely that you didn't link the right package when compiling pyipopt. 
+	First, use 
+		nm /usr/lib/libipopt.so.0 | grep SomeKindOfSymbol
+	to see if this symbol is indeed missing. Do a Google search to find the library file, and 
+	add -lWhateverLibrary in the makefile of pyipopt. 
+	
+	Ipopt is built using various third-party libraries. Different machines may have different set of libraries. You should 
+	try to locate these dependencies and indicate them when compiling pyipopt. This is just a limitation of dynamic linking libraries and 
+	is not related to Pyipopt. Please do not report a missing symbol error as a "bug" to me unless you are 100% sure it is the problem  of pyipopt. 
+--------------------------------------------------------
 
 
 For bug report and other suggestions, please contact me at 
