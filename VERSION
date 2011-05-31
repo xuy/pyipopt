@@ -2,28 +2,28 @@ Version log
 
 	Version 0.1 List works
 
-	Version 0.2 All Numpy types */
+	Version 0.2 Use Numpy arrays instead of lists for efficiency
+
 	Version 0.3 Change the module interface to allocate more nlp instances instead of one
 	now use nlp = pyipopt.create(xxx)
 		and nlp.solve
 			nlp.close()
+	now we can create multiple instance of nlp. [Tested]
 
-	you can create multiple instance of nlp. [Tested]
-
-	Version 0.4
-	
-	To allocate more models in a hooker. Planning to move all the pointers to the 
+	Version 0.4 Move all the pointers to the 
 	PyObject (callback function in Python) to the user_data field
-	Therefore, the C callback function here can just dispatch it to the python
+	Therefore, the C callback function here can just dispatch it to the Python
 	callable object in the user_data [DONE]
 	[We wrap the user_data twice]
 
 	Version 0.5: Bug in H matrix fixed
 
-	Version 0.5.1: some stupid spelling error in the source file and comments fixed
+	Version 0.5.1: some stupid spelling error in the source file and comments fixed.
 
-	Version 0.6: memleak fixed. (at least valgrind won't complain)
+	Version 0.6: Fixed a memory leak problem (at least valgrind won't complain).
 
 	Version 0.7: Fixed a bug for the value of m and n, a bug for reference counting.
 	
-	Version 0.8: Merged patches submitted by others, now supporting intermediate_callback
+	Version 0.8: Merged patches submitted by others, now supporting intermediate_callback (requires Ipopt>=3.9.1)
+
+	Version 0.8.1: Updated the README doc. 

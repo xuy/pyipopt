@@ -41,7 +41,7 @@ To see if you have pyipopy ready, use the following command under the pyipopt's 
 		python example.py
 	
 The file "example.py" contains a toy optimization problem. If everything is OK, pyipopt will invoke Ipopt to solve it for you. 
-This python file is self-documented and can be used as a templete for writing your own optimization problems. 
+This python file is self-documented and can be used as a template for writing your own optimization problems. 
 
 Pyipopt is a legitimate Python module, you can inspect it by using standard Python commands like "dir" or "help". All functions in pyipopt are well documented. 
 
