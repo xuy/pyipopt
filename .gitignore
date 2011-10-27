@@ -1,5 +1,5 @@
 .*
-
+*.html
 # EXCEPTIONS
 !README
 !.gitignore
