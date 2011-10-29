@@ -19,10 +19,21 @@ PyIpopt depends on the following packages:
 
 ### Install
 
+Edit the setup.cfg file to reflect the configuration of your system, then do
+
+	$ python setup.py build
+	$ python setup.py install
+
+You might need to process with superuser privilege if you want to copy
+files to a system-wide python installation.
+
+### Obsolete Approach
+
+Edit makefile, and use
+
 	$ make pyipopt
 	$ make install 
     
-You might need to process with superuser privilege to install. 
 
 ### Note
 

@@ -1,22 +1,39 @@
+//  Author: Eric Xu
+//  Licensed under BSD
+
 #include "Python.h"
 #include "IpStdCInterface.h"
 #include <stdio.h>
-#include "numpy/arrayobject.h"	/* NumPy header */
+#include "numpy/arrayobject.h"
 
-#ifndef PY_IPOPT_HOOK
-#define PY_IPOPT_HOOK
+#ifndef PY_IPOPT_HOOK_
+#define PY_IPOPT_HOOK_
 
-Bool eval_f (Index n, Number * x, Bool new_x,
-	     Number * obj_value, UserDataPtr user_data);
+// A series of callback functions used by Ipopt C Interface
+Bool eval_f(
+  Index n,
+  Number* x,
+  Bool new_x,
+  Number* obj_value,
+  UserDataPtr user_data);
 
-Bool eval_grad_f (Index n, Number * x, Bool new_x,
-		  Number * grad_f, UserDataPtr user_data);
+Bool eval_grad_f(
+  Index n,
+  Number* x,
+  Bool new_x,
+  Number* grad_f, 
+  UserDataPtr user_data);
 
-Bool eval_g (Index n, Number * x, Bool new_x,
-	     Index m, Number * g, UserDataPtr user_data);
+Bool eval_g(
+  Index n,
+  Number* x,
+  Bool new_x,
+  Index m,
+  Number * g,
+  UserDataPtr user_data);
 
-Bool eval_jac_g (Index n, Number * x, Bool new_x,
-		 Index m, Index nele_jac,
+Bool eval_jac_g(Index n, Number * x, Bool new_x,
+	 Index m, Index nele_jac,
 		 Index * iRow, Index * jCol, Number * values,
 		 UserDataPtr user_data);
 
@@ -47,7 +64,7 @@ typedef struct
 } DispatchData;
 
 
-PyObject *problem_getattr (PyObject * self, char *attrname);
+PyObject *problem_getattr(PyObject * self, char *attrname);
 
 /* Logging */
 #define VERBOSE 2
@@ -62,6 +79,4 @@ typedef struct
   DispatchData *data;
 } problem;
 
-
-
-#endif
+#endif  //  PY_IPOPT_HOOK_
