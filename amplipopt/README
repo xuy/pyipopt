@@ -1,7 +1,0 @@
-This is a simple ampl and pyipopt wrapper. 
-
-You should be able to use 
-
-python amplipopt some_file.nl 
-
-to solve optimization problems directly. 

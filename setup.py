@@ -19,9 +19,9 @@ FILES = ["src/callback.c", "src/pyipopt.c"]
 setup(name="pyipopt",
     version="1.0",
     description="An IPOPT connector for Python",
-    author="Eric You Xu",
-    author_email="youxu@wustl.edu",
-    url="http://code.google.com/p/pyipopt/",
+    author="Eric Xu",
+    author_email="xu.mathena@gmail.com",
+    url="https://github.com/xuy/pyipopt",
     ext_modules=[
         Extension("pyipopt",FILES,
         library_dirs=[],
