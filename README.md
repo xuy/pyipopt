@@ -19,10 +19,21 @@ PyIpopt depends on the following packages:
 
 ### Install
 
+Edit the setup.cfg file to reflect the configuration of your system, then do
+
+	$ python setup.py build
+	$ python setup.py install
+
+You might need to process with superuser privilege if you want to copy
+files to a system-wide python installation.
+
+### Obsolete Approach
+
+Edit makefile, and use
+
 	$ make pyipopt
 	$ make install 
     
-You might need to process with superuser privilege to install. 
 
 ### Note
 
@@ -62,11 +73,11 @@ Contributing
 ------------
 
 1. Fork it.
-2. Create a branch (`git checkout -b my_pyioiot`)
+2. Create a branch (`git checkout -b my_pyipopt`)
 3. Commit your changes (`git commit -am "your awesome message"`)
-4. Push to the branch (`git push origin my_pyioiot`)
-5. Create an [Issue][1] with a link to your branch
-6. Nag me about it
+4. Push to the branch (`git push origin my_pyipopt`)
+5. Create an Issue with a link to your branch
+6. Nag me about it if I am lazy.
 
 Troubleshooting
 ---------------

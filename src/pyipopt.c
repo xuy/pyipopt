@@ -510,7 +510,7 @@ solve(PyObject * self, PyObject * args)
 		retval = PyErr_NoMemory();
 		goto done;
 	}
-	double         *xdata = (double *) x0->data;
+	double *xdata = (double *) x0->data;
 	for (i = 0; i < n; i++)
 		newx0[i] = xdata[i];
 
@@ -518,16 +518,9 @@ solve(PyObject * self, PyObject * args)
 	mU = (PyArrayObject *) PyArray_SimpleNew(1, dX, PyArray_DOUBLE);
 
 
-
-	// freopen("/dev/null", "w", stdout);
-	status = IpoptSolve(nlp, newx0, NULL, &obj, NULL, (double *) mL->data, (double *) mU->data, (UserDataPtr) bigfield);
-	/* The final parameter is the userdata (void * type) */
-
 	/* For status code, see IpReturnCodes_inc.h in Ipopt */
-	double         *xdata = (double *) x->data;
-  for (i = 0; i < n; i++) {
-    xdata[i] = newx0[i];
-	}
+
+	status = IpoptSolve(nlp, newx0, NULL, &obj, NULL, (double *) mL->data, (double *) mU->data, (UserDataPtr) bigfield);
 	retval = Py_BuildValue(
 			       "NNNdO",
 			       PyArray_Return(x),
