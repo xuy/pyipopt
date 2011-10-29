@@ -1,35 +1,8 @@
-/* Copyright (c) 2008, Eric You Xu, Washington University All rights
- * reserved. Redistribution and use in source and binary forms, with or
- * without modification, are permitted provided that the following conditions
- * are met:
- * 
- * Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer. * Redistributions in
- * binary form must reproduce the above copyright notice, this list of
- * conditions and the following disclaimer in the documentation and/or other
- * materials provided with the distribution. * Neither the name of the
- * Washington University nor the names of its contributors may be used to
- * endorse or promote products derived from this software without specific
- * prior written permission.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS "AS IS" AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE REGENTS AND CONTRIBUTORS BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- */
+//  Author: Eric Xu
+//  Licensed under BSD
 
-
-/* 
- * Modifications made by 
- * OpenMDAO at NASA Glenn Research Center, 2010 and 2011
- */
+// Modifications made by 
+// OpenMDAO at NASA Glenn Research Center, 2010 and 2011
 
 #include "hook.h"
 
@@ -37,44 +10,40 @@ int user_log_level = TERSE;
 
 /* Object Section */
 /* sig of this is void foo(PyO*) */
-static void 
-problem_dealloc(PyObject * self)
-{
-	problem        *temp = (problem *) self;
+static void problem_dealloc(PyObject * self) {
+	problem *temp = (problem *) self;
 	free(temp->data);
-	return;
 }
 
-PyObject       *solve(PyObject * self, PyObject * args);
-PyObject       *set_intermediate_callback(PyObject * self, PyObject * args);
-PyObject       *close_model(PyObject * self, PyObject * args);
+PyObject *solve(PyObject * self, PyObject * args);
+PyObject *set_intermediate_callback(PyObject * self, PyObject * args);
+PyObject *close_model(PyObject * self, PyObject * args);
 
-static char     PYIPOPT_SOLVE_DOC[] = "solve(x) -> (x, ml, mu, obj)\n \
-       \n                                                        \
-       Call Ipopt to solve problem created before and return  \n \
-       a tuple that contains final solution x, upper and lower\n \
-       bound for multiplier, final objective function obj, \n \
-       and the return status of ipopt. \n";
+static char PYIPOPT_SOLVE_DOC[] = "solve(x) -> (x, ml, mu, obj)\n \
+  \n                                                        \
+  Call Ipopt to solve problem created before and return  \n \
+  a tuple that contains final solution x, upper and lower\n \
+  bound for multiplier, final objective function obj, \n \
+  and the return status of ipopt. \n";
 
-static char     PYIPOPT_SET_INTERMEDIATE_CALLBACK_DOC[] = "set_intermediate_callback(callback_function)\n \
-       \n                                                              \
-       Set the intermediate callback function. This gets called each iteration.";
+static char PYIPOPT_SET_INTERMEDIATE_CALLBACK_DOC[] = 
+  "set_intermediate_callback(callback_function)\n \
+  \n                                              \
+  Set the intermediate callback function.         \
+  This gets called each iteration.";
 
-static char     PYIPOPT_CLOSE_DOC[] = "After all the solving, close the model\n";
+static char PYIPOPT_CLOSE_DOC[] = "After all the solving, close the model\n";
 
-static char     PYIPOPT_ADD_STR_OPTION_DOC[] = "Set the String option for Ipopt. See the document for Ipopt for more information.\n";
+static char PYIPOPT_ADD_STR_OPTION_DOC[] =
+  "Set the String option for Ipopt. See the document for Ipopt for more information.\n";
 
 
-static PyObject *
-add_str_option(PyObject * self, PyObject * args)
-{
-	problem        *temp = (problem *) self;
-	IpoptProblem    nlp = (IpoptProblem) (temp->nlp);
-
-	char           *param;
-	char           *value;
-
-	Bool            ret;
+static PyObject * add_str_option(PyObject * self, PyObject * args) {
+	problem *temp = (problem *) self;
+	IpoptProblem nlp = (IpoptProblem) (temp->nlp);
+	char *param;
+	char *value;
+	Bool ret;
 
 	if (!PyArg_ParseTuple(args, "ss:str_option", &param, &value)) {
 		return NULL;
@@ -89,7 +58,8 @@ add_str_option(PyObject * self, PyObject * args)
 }
 
 
-static char     PYIPOPT_ADD_INT_OPTION_DOC[] = "Set the Int option for Ipopt. See the document for Ipopt for more information.\n";
+static char     PYIPOPT_ADD_INT_OPTION_DOC[] = 
+  "Set the Int option for Ipopt. See the document for Ipopt for more information.\n";
 
 static PyObject *
 add_int_option(PyObject * self, PyObject * args)
@@ -116,7 +86,8 @@ add_int_option(PyObject * self, PyObject * args)
 }
 
 
-static char     PYIPOPT_ADD_NUM_OPTION_DOC[] = "Set the Number/double option for Ipopt. See the document for Ipopt for more information.\n";
+static char     PYIPOPT_ADD_NUM_OPTION_DOC[] = 
+  "Set the Number/double option for Ipopt. See the document for Ipopt for more information.\n";
 
 static PyObject *
 add_num_option(PyObject * self, PyObject * args)
@@ -553,11 +524,9 @@ solve(PyObject * self, PyObject * args)
 	/* The final parameter is the userdata (void * type) */
 
 	/* For status code, see IpReturnCodes_inc.h in Ipopt */
-	if (status == Solve_Succeeded || status == Solved_To_Acceptable_Level) {
-		double         *xdata = (double *) x->data;
-		for (i = 0; i < n; i++)
-			xdata[i] = newx0[i];
-		/* FreeIpoptProblem(nlp); */
+	double         *xdata = (double *) x->data;
+  for (i = 0; i < n; i++) {
+    xdata[i] = newx0[i];
 	}
 	retval = Py_BuildValue(
 			       "NNNdO",
@@ -566,7 +535,7 @@ solve(PyObject * self, PyObject * args)
 			       PyArray_Return(mU),
 			       obj,
 			       Py_BuildValue("i", status)
-		);
+	);
 	goto done;
 
 done:

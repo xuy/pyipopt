@@ -1,8 +1,9 @@
 CC = gcc
 CFLAGS = -O3 -fpic -shared
 DFLAGS = -fpic -shared
-LDFLAGS = -lipopt -lm -llapack -lblas -lcoinhsl
+LDFLAGS = -lipopt -lm -llapack -lblas -lcoinhsl 
 # You might also need -lgfortran, I don't have it because I use g77 to compile my ipopt
+# recent versions of Ipopt may also require -lcoinmumps -lcoinmetis
 PY_DIR = /usr/local/lib/python2.5/site-packages
 
 # Change this to your ipopt include path that includes IpStdCInterface.h 
