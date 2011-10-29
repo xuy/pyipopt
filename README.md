@@ -19,13 +19,10 @@ PyIpopt depends on the following packages:
 
 ### Install
 
-Edit the setup.cfg file to reflect the configuration of your system, then do
+Edit one line in the setup.py file to reflect the configuration of your system, then do
 
 	$ python setup.py build
-	$ python setup.py install
-
-You might need to process with superuser privilege if you want to copy
-files to a system-wide python installation.
+	$ sudo python setup.py install
 
 ### Obsolete Approach
 
@@ -34,6 +31,11 @@ Edit makefile, and use
 	$ make pyipopt
 	$ make install 
     
+### Test
+
+  $ python hs071.py
+
+You should be able to see the result of solving the toy problem.
 
 ### Note
 
