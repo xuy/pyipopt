@@ -1,1 +1,4 @@
-1. A switch to turn on/off ipopt's output
+1. Release an up-to-date version
+  a. Merge a couple of changes from b45ch1, alanfalloon
+
+2. Add the automate system to avoid Makefile melding.
