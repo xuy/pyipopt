@@ -7,7 +7,6 @@ Python.
 Installation
 ------------
 
-
 ### Dependencies
 
 PyIpopt depends on the following packages:
@@ -24,23 +23,11 @@ Edit one line in the setup.py file to reflect the configuration of your system, 
 	$ python setup.py build
 	$ sudo python setup.py install
 
-### Obsolete Approach
-
-Edit makefile, and use
-
-	$ make pyipopt
-	$ make install 
-    
 ### Test
 
   $ python hs071.py
 
 You should be able to see the result of solving the toy problem.
-
-### Note
-
-You might have to edit Makefile to fit your machine's configuration. 
-
 
 Usage
 -----
@@ -52,8 +39,10 @@ You can use PyIpopt like this:
 	nlp.solve(...)
 	nlp.close()
 
-You can also check src/example.py to see how to use PyIpopt.
+You can also check out hs071.py to see how to use PyIpopt.
 
+PyIpopt as a module comes with docstring. You can poke around 
+it by using Python's $help()$ command.
 
 Testing
 -------
