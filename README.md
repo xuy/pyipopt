@@ -18,7 +18,11 @@ PyIpopt depends on the following packages:
 
 ### Install
 
-Edit one line in the setup.py file to reflect the configuration of your system, then do
+First, get the latest source code using:
+
+  $ git clone http://github.com/xuy/pyipopt.git
+
+In your PyIpopt folder, edit setup.py to reflect the configuration of your system, then do
 
 	$ python setup.py build
 	$ sudo python setup.py install

@@ -31,7 +31,7 @@ setup(name="pyipopt",
     Extension("pyipopt",FILES,
     extra_link_args=['-Wl,--rpath','-Wl,'+ IPOPT_LIB],
     library_dirs=[IPOPT_LIB],
-    libraries=['ipopt','coinblas','coinlapack','coinmetis','coinmumps','dl','m'],
+    libraries=['ipopt','coinblas','coinhsl','coinlapack','coinmetis','coinmumps','dl','m'],
     include_dirs=[numpy_include,IPOPT_INC]),
   ]
 )
