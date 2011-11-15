@@ -51,14 +51,13 @@ I have included an example
 
 To see if you have PyIpopt ready, use the following command under the pyipopt's directory. 
 
-		python example.py
+		python hs071.py
 	
-The file "example.py" contains a toy optimization problem. If everything is OK, pyipopt will invoke Ipopt to solve it for you. 
-This python file is self-documented and can be used as a template for writing your own optimization problems. 
+The file "hs071.py" contains a toy optimization problem. If everything is OK, pyipopt will invoke Ipopt to solve it for you. This python file is self-documented and can be used as a template for writing your own optimization problems. 
 
 Pyipopt is a legitimate Python module, you can inspect it by using standard Python commands like "dir" or "help". All functions in pyipopt are well documented. 
 
-Since Hessian estimation is usually tedious, Ipopt can solve problems without Hessian estimation. Pyipopt also supports this feature. The file "example.py" demonstrates the idea. If you provide the pyipopt.create function with an "eval_h" callback function as well as the "apply_new" callback function, Ipopt will delegate the Hessian matrix calculation to your function (otherwise Ipopt will approximate Hessian for you).
+Since Hessian estimation is usually tedious, Ipopt can solve problems without Hessian estimation. Pyipopt also supports this feature. The file "hs071.py" demonstrates the idea. If you provide the pyipopt.create function with an "eval_h" callback function as well as the "apply_new" callback function, Ipopt will delegate the Hessian matrix calculation to your function (otherwise Ipopt will approximate Hessian for you).
 
 Contributing
 ------------
