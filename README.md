@@ -7,7 +7,6 @@ Python.
 Installation
 ------------
 
-
 ### Dependencies
 
 PyIpopt depends on the following packages:
@@ -19,26 +18,20 @@ PyIpopt depends on the following packages:
 
 ### Install
 
-Edit the setup.cfg file to reflect the configuration of your system, then do
+First, get the latest source code using:
+
+  $ git clone http://github.com/xuy/pyipopt.git
+
+In your PyIpopt folder, edit setup.py to reflect the configuration of your system, then do
 
 	$ python setup.py build
-	$ python setup.py install
+	$ sudo python setup.py install
 
-You might need to process with superuser privilege if you want to copy
-files to a system-wide python installation.
+### Test
 
-### Obsolete Approach
+  $ python hs071.py
 
-Edit makefile, and use
-
-	$ make pyipopt
-	$ make install 
-    
-
-### Note
-
-You might have to edit Makefile to fit your machine's configuration. 
-
+You should be able to see the result of solving the toy problem.
 
 Usage
 -----
@@ -50,8 +43,10 @@ You can use PyIpopt like this:
 	nlp.solve(...)
 	nlp.close()
 
-You can also check src/example.py to see how to use PyIpopt.
+You can also check out hs071.py to see how to use PyIpopt.
 
+PyIpopt as a module comes with docstring. You can poke around 
+it by using Python's $help()$ command.
 
 Testing
 -------
@@ -60,14 +55,13 @@ I have included an example
 
 To see if you have PyIpopt ready, use the following command under the pyipopt's directory. 
 
-		python example.py
+		python hs071.py
 	
-The file "example.py" contains a toy optimization problem. If everything is OK, pyipopt will invoke Ipopt to solve it for you. 
-This python file is self-documented and can be used as a template for writing your own optimization problems. 
+The file "hs071.py" contains a toy optimization problem. If everything is OK, pyipopt will invoke Ipopt to solve it for you. This python file is self-documented and can be used as a template for writing your own optimization problems. 
 
 Pyipopt is a legitimate Python module, you can inspect it by using standard Python commands like "dir" or "help". All functions in pyipopt are well documented. 
 
-Since Hessian estimation is usually tedious, Ipopt can solve problems without Hessian estimation. Pyipopt also supports this feature. The file "example.py" demonstrates the idea. If you provide the pyipopt.create function with an "eval_h" callback function as well as the "apply_new" callback function, Ipopt will delegate the Hessian matrix calculation to your function (otherwise Ipopt will approximate Hessian for you).
+Since Hessian estimation is usually tedious, Ipopt can solve problems without Hessian estimation. Pyipopt also supports this feature. The file "hs071.py" demonstrates the idea. If you provide the pyipopt.create function with an "eval_h" callback function as well as the "apply_new" callback function, Ipopt will delegate the Hessian matrix calculation to your function (otherwise Ipopt will approximate Hessian for you).
 
 Contributing
 ------------
