@@ -521,8 +521,12 @@ solve(PyObject * self, PyObject * args)
 	/* For status code, see IpReturnCodes_inc.h in Ipopt */
 
 	status = IpoptSolve(nlp, newx0, NULL, &obj, NULL, (double *) mL->data, (double *) mU->data, (UserDataPtr) bigfield);
+	for (i = 0; i < n; i++) {
+		double* return_x_data = (double *) x->data;
+		return_x_data[i] = newx0[i];
+	}
 	retval = Py_BuildValue(
-			       "NNNdO",
+			       "OOOdO",
 			       PyArray_Return(x),
 			       PyArray_Return(mL),
 			       PyArray_Return(mU),

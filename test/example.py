@@ -113,8 +113,9 @@ x, zl, zu, obj, status = nlp.solve(x0)
 nlp.close()
 
 print "Solution of the primal variables, x"
-print x
-
+for i in xrange(len(x)):
+  print "x["+str(i)+"] =", x[i]
+print
 print "Solution of the bound multipliers, z_L and z_U"
 print zl, zu
 
