@@ -6,8 +6,8 @@
 
 #include "hook.h"
 
-#ifndef FREE
-#define FREE(p) {if (p) {free(p); (p)= NULL;}}
+#ifndef SAFE_FREE
+#define SAFE_FREE(p) {if (p) {free(p); (p)= NULL;}}
 #endif
 
 int user_log_level = TERSE;
@@ -17,7 +17,7 @@ int user_log_level = TERSE;
 static void problem_dealloc(PyObject * self)
 {
 	problem *temp = (problem *) self;
-	FREE(temp->data);
+	SAFE_FREE(temp->data);
 }
 
 PyObject *solve(PyObject * self, PyObject * args);
@@ -285,10 +285,10 @@ static PyObject *create(PyObject * obj, PyObject * args)
 			      &nele_jac, &nele_hess,
 			      &f, &gradf, &g, &jacg, &h, &applynew)) {
 		retval = NULL;
-		FREE(x_L);
-		FREE(x_U);
-		FREE(g_L);
-		FREE(g_U);
+		SAFE_FREE(x_L);
+		SAFE_FREE(x_U);
+		SAFE_FREE(g_L);
+		SAFE_FREE(g_U);
 		return retval;
 	}
 	if (!PyCallable_Check(f) ||
@@ -297,10 +297,10 @@ static PyObject *create(PyObject * obj, PyObject * args)
 		PyErr_SetString(PyExc_TypeError,
 				"Need a callable object for callback functions");
 		retval = NULL;
-		FREE(x_L);
-		FREE(x_U);
-		FREE(g_L);
-		FREE(g_U);
+		SAFE_FREE(x_L);
+		SAFE_FREE(x_U);
+		SAFE_FREE(g_L);
+		SAFE_FREE(g_U);
 		return retval;
 	}
 	myowndata.eval_f_python = f;
@@ -315,10 +315,10 @@ static PyObject *create(PyObject * obj, PyObject * args)
 			PyErr_SetString(PyExc_TypeError,
 					"Need a callable object for function h.");
 			retval = NULL;
-			FREE(x_L);
-			FREE(x_U);
-			FREE(g_L);
-			FREE(g_U);
+			SAFE_FREE(x_L);
+			SAFE_FREE(x_U);
+			SAFE_FREE(g_L);
+			SAFE_FREE(g_U);
 			return retval;
 		}
 	} else {
@@ -332,30 +332,30 @@ static PyObject *create(PyObject * obj, PyObject * args)
 			PyErr_SetString(PyExc_TypeError,
 					"Need a callable object for function applynew.");
 			retval = NULL;
-			FREE(x_L);
-			FREE(x_U);
-			FREE(g_L);
-			FREE(g_U);
+			SAFE_FREE(x_L);
+			SAFE_FREE(x_U);
+			SAFE_FREE(g_L);
+			SAFE_FREE(g_U);
 			return retval;
 		}
 	}
 	if (m < 0 || n < 0) {
 		PyErr_SetString(PyExc_TypeError, "m or n can't be negative");
 		retval = NULL;
-		FREE(x_L);
-		FREE(x_U);
-		FREE(g_L);
-		FREE(g_U);
+		SAFE_FREE(x_L);
+		SAFE_FREE(x_U);
+		SAFE_FREE(g_L);
+		SAFE_FREE(g_U);
 		return retval;
 	}
 	x_L = (Number *) malloc(sizeof(Number) * n);
 	x_U = (Number *) malloc(sizeof(Number) * n);
 	if (!x_L || !x_U) {
 		retval = PyErr_NoMemory();
-		FREE(x_L);
-		FREE(x_U);
-		FREE(g_L);
-		FREE(g_U);
+		SAFE_FREE(x_L);
+		SAFE_FREE(x_U);
+		SAFE_FREE(g_L);
+		SAFE_FREE(g_U);
 		return retval;
 	}
 	xldata = (double *)xL->data;
@@ -393,10 +393,10 @@ static PyObject *create(PyObject * obj, PyObject * args)
 		PyErr_SetString(PyExc_MemoryError,
 				"Cannot create IpoptProblem instance");
 		retval = NULL;
-		FREE(x_L);
-		FREE(x_U);
-		FREE(g_L);
-		FREE(g_U);
+		SAFE_FREE(x_L);
+		SAFE_FREE(x_U);
+		SAFE_FREE(g_L);
+		SAFE_FREE(g_U);
 		return retval;
 	}
 	object = PyObject_NEW(problem, &IpoptProblemType);
@@ -406,28 +406,28 @@ static PyObject *create(PyObject * obj, PyObject * args)
 		dp = (DispatchData *) malloc(sizeof(DispatchData));
 		if (!dp) {
 			retval = PyErr_NoMemory();
-			FREE(x_L);
-			FREE(x_U);
-			FREE(g_L);
-			FREE(g_U);
+			SAFE_FREE(x_L);
+			SAFE_FREE(x_U);
+			SAFE_FREE(g_L);
+			SAFE_FREE(g_U);
 			return retval;
 		}
 		memcpy((void *)dp, (void *)&myowndata, sizeof(DispatchData));
 		object->data = dp;
 		retval = (PyObject *) object;
-		FREE(x_L);
-		FREE(x_U);
-		FREE(g_L);
-		FREE(g_U);
+		SAFE_FREE(x_L);
+		SAFE_FREE(x_U);
+		SAFE_FREE(g_L);
+		SAFE_FREE(g_U);
 		return retval;
 	} else {
 		PyErr_SetString(PyExc_MemoryError,
 				"Can't create a new Problem instance");
 		retval = NULL;
-		FREE(x_L);
-		FREE(x_U);
-		FREE(g_L);
-		FREE(g_U);
+		SAFE_FREE(x_L);
+		SAFE_FREE(x_U);
+		SAFE_FREE(g_L);
+		SAFE_FREE(g_U);
 		return retval;
 	}
 }
@@ -515,7 +515,7 @@ PyObject *solve(PyObject * self, PyObject * args)
 			Py_XDECREF(mL);
 			Py_XDECREF(mU);
 		}
-		FREE(newx0);
+		SAFE_FREE(newx0);
 		return retval;
 	}
 	if (myuserdata != NULL) {
@@ -535,7 +535,7 @@ PyObject *solve(PyObject * self, PyObject * args)
 			Py_XDECREF(mL);
 			Py_XDECREF(mU);
 		}
-		FREE(newx0);
+		SAFE_FREE(newx0);
 		return retval;
 	}
 	if (bigfield->eval_h_python == NULL) {
@@ -557,7 +557,7 @@ PyObject *solve(PyObject * self, PyObject * args)
 			Py_XDECREF(mL);
 			Py_XDECREF(mU);
 		}
-		FREE(newx0);
+		SAFE_FREE(newx0);
 		return retval;
 	}
 	newx0 = (Number *) malloc(sizeof(Number) * n);
@@ -569,7 +569,7 @@ PyObject *solve(PyObject * self, PyObject * args)
 			Py_XDECREF(mL);
 			Py_XDECREF(mU);
 		}
-		FREE(newx0);
+		SAFE_FREE(newx0);
 		return retval;
 	}
 	double *xdata = (double *)x0->data;
@@ -600,7 +600,7 @@ PyObject *solve(PyObject * self, PyObject * args)
 		Py_XDECREF(mL);
 		Py_XDECREF(mU);
 	}
-	FREE(newx0);
+	SAFE_FREE(newx0);
 	return retval;
 }
 
