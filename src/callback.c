@@ -36,13 +36,6 @@
 #include "hook.h"
 #include <unistd.h>
 
-/* 
-void
-logger (char *str)
-{
-}
-*/
-
 void logger(const char *fmt, ...)
 {
 	if (user_log_level == VERBOSE) {
