@@ -45,15 +45,18 @@ logger (char *str)
 
 
 
-void logger(const char* fmt,...) {
-	if (user_log_level == VERBOSE) {
-		va_list ap;
-		va_start(ap,fmt);
-		vprintf(fmt, ap);
-		va_end(ap);
-		printf("\n");
-		fflush(stdout);
-	}
+void
+logger (const char *fmt, ...)
+{
+  if (user_log_level == VERBOSE)
+    {
+      va_list ap;
+      va_start (ap, fmt);
+      vprintf (fmt, ap);
+      va_end (ap);
+      printf ("\n");
+      fflush (stdout);
+    }
 }
 
 Bool
@@ -147,7 +150,7 @@ eval_f (Index n, Number * x, Bool new_x, Number * obj_value, UserDataPtr data)
 
   // import_array ();
 
-  import_array1(FALSE);
+  import_array1 (FALSE);
   PyObject *arrayx =
     PyArray_SimpleNewFromData (1, dims, PyArray_DOUBLE, (char *) x);
   if (!arrayx)
@@ -221,7 +224,7 @@ eval_grad_f (Index n, Number * x, Bool new_x,
   dims[0] = n;
   // import_array ();
 
-  import_array1(FALSE);
+  import_array1 (FALSE);
 
   /*
    * PyObject *arrayx = PyArray_FromDimsAndData(1, dims, PyArray_DOUBLE
@@ -297,7 +300,7 @@ eval_g (Index n, Number * x, Bool new_x,
   dims[0] = n;
   // import_array ();
 
-  import_array1(FALSE);
+  import_array1 (FALSE);
 
   /*
    * PyObject *arrayx = PyArray_FromDimsAndData(1, dims, PyArray_DOUBLE
@@ -380,7 +383,7 @@ eval_jac_g (Index n, Number * x, Bool new_x,
   if (values == NULL)
     {
       /* import_array (); */
-      import_array1(FALSE);
+      import_array1 (FALSE);
 
       PyObject *arrayx =
 	PyArray_SimpleNewFromData (1, dims, PyArray_DOUBLE, (char *) x);
@@ -413,7 +416,8 @@ eval_jac_g (Index n, Number * x, Bool new_x,
 
       if (!row || !col || !PyArray_Check (row) || !PyArray_Check (col))
 	{
-	  logger ("[Error] there are problems with row or col in eval_jac_g.\n");
+	  logger
+	    ("[Error] there are problems with row or col in eval_jac_g.\n");
 	  PyErr_Print ();
 	}
       rowd = (long *) row->data;
