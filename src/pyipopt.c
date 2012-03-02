@@ -1,8 +1,10 @@
 /*  Author: Eric Xu                                       */
 /*  Licensed under BSD                                    */
 /*                                                        */
-/*  Modifications made by                                 */
+/*  Modifications on logger made by                       */
 /*  OpenMDAO at NASA Glenn Research Center, 2010 and 2011 */
+/*  Modifications on the SAFE_FREE macro made by          */
+/*  Guillaume Jacquenot, 2012                             */
 
 #include "hook.h"
 
