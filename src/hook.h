@@ -10,20 +10,30 @@
 #define PY_IPOPT_HOOK_
 
 // A series of callback functions used by Ipopt C Interface
-Bool eval_f (Index n,
-	     Number * x,
-	     Bool new_x, Number * obj_value, UserDataPtr user_data);
+Bool eval_f(
+  Index n,
+  Number* x,
+  Bool new_x,
+  Number* obj_value,
+  UserDataPtr user_data);
 
-Bool eval_grad_f (Index n,
-		  Number * x,
-		  Bool new_x, Number * grad_f, UserDataPtr user_data);
+Bool eval_grad_f(
+  Index n,
+  Number* x,
+  Bool new_x,
+  Number* grad_f, 
+  UserDataPtr user_data);
 
-Bool eval_g (Index n,
-	     Number * x,
-	     Bool new_x, Index m, Number * g, UserDataPtr user_data);
+Bool eval_g(
+  Index n,
+  Number* x,
+  Bool new_x,
+  Index m,
+  Number * g,
+  UserDataPtr user_data);
 
-Bool eval_jac_g (Index n, Number * x, Bool new_x,
-		 Index m, Index nele_jac,
+Bool eval_jac_g(Index n, Number * x, Bool new_x,
+	 Index m, Index nele_jac,
 		 Index * iRow, Index * jCol, Number * values,
 		 UserDataPtr user_data);
 
@@ -54,14 +64,14 @@ typedef struct
 } DispatchData;
 
 
-PyObject *problem_getattr (PyObject * self, char *attrname);
+PyObject *problem_getattr(PyObject * self, char *attrname);
 
 /* Logging */
 #define VERBOSE 2
 #define IPOPT_OUTPUT 1
 #define TERSE 0
 extern int user_log_level;
-void logger (const char *fmt, ...);
+void logger (const char *fmt,...);
 
 typedef struct
 {
@@ -69,4 +79,4 @@ typedef struct
   DispatchData *data;
 } problem;
 
-#endif //  PY_IPOPT_HOOK_
+#endif  //  PY_IPOPT_HOOK_
