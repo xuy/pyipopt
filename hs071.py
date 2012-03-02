@@ -112,18 +112,13 @@ x, zl, zu, obj, status = nlp.solve(x0)
 # import pdb; pdb.set_trace()
 nlp.close()
 
-def print_variable(variable_name, value):
-  for i in xrange(len(value)):
-    print variable_name + "["+str(i)+"] =", value[i]
-
-print
 print "Solution of the primal variables, x"
-print_variable("x", x)
+for i in xrange(len(x)):
+  print "x["+str(i)+"] =", x[i]
 print
 print "Solution of the bound multipliers, z_L and z_U"
-print_variable("z_L", zl)
-print_variable("z_U", zu)
-print
+print zl, zu
+
 print "Objective value"
 print "f(x*) =", obj
 
