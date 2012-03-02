@@ -27,3 +27,5 @@ List of changes
 	Version 0.8: Merged patches submitted by others, now supporting intermediate_callback (requires Ipopt>=3.9.1)
 
 	Version 0.8.1: Updated the README doc. 
+
+	Version 0.8.2: Merged a change from Guillaume Jacquenot, now there is no GOTO in the source code.
