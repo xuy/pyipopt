@@ -124,7 +124,7 @@ and issue $make to ensure you can compile and run the toy example supplied by Ip
 	ImportError: /usr/lib/libipopt.so.0: undefined symbol: SomeKindOfSymbol
 	
 * Solution:
-	I can assure you that it is NOT a bug of pyipopt. It is very likely that you didn't link the right package when compiling pyipopt. 
+	I can assure you that it is NOT a bug of pyipopt. It is very likely that you did not link the right package when compiling pyipopt. 
 	First, use 
 		nm /usr/lib/libipopt.so.0 | grep SomeKindOfSymbol
 	to see if this symbol is indeed missing. Do a Google search to find the library file, and 
@@ -139,6 +139,6 @@ Contact
 --------
 
 Eric Xu <xu.mathena@gmail.com>
-
+Software Engineer @ Google
 
 
