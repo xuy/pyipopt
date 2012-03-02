@@ -570,8 +570,7 @@ eval_h(Index n, Number * x, Bool new_x, Number obj_factor,
 			arglist =
 			    Py_BuildValue("(OOOOO)", arrayx, lagrangex,
 					  objfactor, Py_False);
-		PyArrayObject *result =
-		    (PyArrayObject *)
+		PyArrayObject *result = (PyArrayObject *)
 		    PyObject_CallObject(myowndata->eval_h_python,
 					arglist);
 
