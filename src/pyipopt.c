@@ -1,10 +1,14 @@
-//  Author: Eric Xu
-//  Licensed under BSD
-
-// Modifications made by 
-// OpenMDAO at NASA Glenn Research Center, 2010 and 2011
+/*  Author: Eric Xu                                       */
+/*  Licensed under BSD                                    */
+/*                                                        */
+/*  Modifications made by                                 */
+/*  OpenMDAO at NASA Glenn Research Center, 2010 and 2011 */
 
 #include "hook.h"
+
+#ifndef FREE
+#define FREE(p) {if (p) {free(p); (p)= NULL;}}
+#endif
 
 int user_log_level = TERSE;
 
@@ -13,7 +17,7 @@ int user_log_level = TERSE;
 static void problem_dealloc(PyObject * self)
 {
 	problem *temp = (problem *) self;
-	free(temp->data);
+	FREE(temp->data);
 }
 
 PyObject *solve(PyObject * self, PyObject * args);
@@ -198,12 +202,12 @@ static char PYIPOPT_CREATE_DOC[] =
                which will make the convergence slower. ";
 
 static char PYIPOPT_LOG_DOC[] = "set_loglevel(level)\n \
-	\n \
-	Set the log level of PyIPOPT \n \
-	levels: \n \
-		0:	Terse, 	  no log from pyipopt \n \
-		1:	Moderate, logs for ipopt \n \
-		2:	Verbose,  logs for both ipopt and pyipopt. \n";
+    \n \
+    Set the log level of PyIPOPT \n \
+    levels: \n \
+        0:  Terse,    no log from pyipopt \n \
+        1:  Moderate, logs for ipopt \n \
+        2:  Verbose,  logs for both ipopt and pyipopt. \n";
 
 static PyObject *set_loglevel(PyObject * obj, PyObject * args)
 {
@@ -281,7 +285,11 @@ static PyObject *create(PyObject * obj, PyObject * args)
 			      &nele_jac, &nele_hess,
 			      &f, &gradf, &g, &jacg, &h, &applynew)) {
 		retval = NULL;
-		goto done;
+		FREE(x_L);
+		FREE(x_U);
+		FREE(g_L);
+		FREE(g_U);
+		return retval;
 	}
 	if (!PyCallable_Check(f) ||
 	    !PyCallable_Check(gradf) ||
@@ -289,7 +297,11 @@ static PyObject *create(PyObject * obj, PyObject * args)
 		PyErr_SetString(PyExc_TypeError,
 				"Need a callable object for callback functions");
 		retval = NULL;
-		goto done;
+		FREE(x_L);
+		FREE(x_U);
+		FREE(g_L);
+		FREE(g_U);
+		return retval;
 	}
 	myowndata.eval_f_python = f;
 	myowndata.eval_grad_f_python = gradf;
@@ -303,7 +315,11 @@ static PyObject *create(PyObject * obj, PyObject * args)
 			PyErr_SetString(PyExc_TypeError,
 					"Need a callable object for function h.");
 			retval = NULL;
-			goto done;
+			FREE(x_L);
+			FREE(x_U);
+			FREE(g_L);
+			FREE(g_U);
+			return retval;
 		}
 	} else {
 		logger("[PyIPOPT] Ipopt will use Hessian approximation.\n");
@@ -316,19 +332,31 @@ static PyObject *create(PyObject * obj, PyObject * args)
 			PyErr_SetString(PyExc_TypeError,
 					"Need a callable object for function applynew.");
 			retval = NULL;
-			goto done;
+			FREE(x_L);
+			FREE(x_U);
+			FREE(g_L);
+			FREE(g_U);
+			return retval;
 		}
 	}
 	if (m < 0 || n < 0) {
 		PyErr_SetString(PyExc_TypeError, "m or n can't be negative");
 		retval = NULL;
-		goto done;
+		FREE(x_L);
+		FREE(x_U);
+		FREE(g_L);
+		FREE(g_U);
+		return retval;
 	}
 	x_L = (Number *) malloc(sizeof(Number) * n);
 	x_U = (Number *) malloc(sizeof(Number) * n);
 	if (!x_L || !x_U) {
 		retval = PyErr_NoMemory();
-		goto done;
+		FREE(x_L);
+		FREE(x_U);
+		FREE(g_L);
+		FREE(g_U);
+		return retval;
 	}
 	xldata = (double *)xL->data;
 	xudata = (double *)xU->data;
@@ -365,36 +393,43 @@ static PyObject *create(PyObject * obj, PyObject * args)
 		PyErr_SetString(PyExc_MemoryError,
 				"Cannot create IpoptProblem instance");
 		retval = NULL;
-		goto done;
+		FREE(x_L);
+		FREE(x_U);
+		FREE(g_L);
+		FREE(g_U);
+		return retval;
 	}
 	object = PyObject_NEW(problem, &IpoptProblemType);
 
 	if (object != NULL) {
 		object->nlp = thisnlp;
-		dp = malloc(sizeof(DispatchData));
+		dp = (DispatchData *) malloc(sizeof(DispatchData));
 		if (!dp) {
 			retval = PyErr_NoMemory();
-			goto done;
+			FREE(x_L);
+			FREE(x_U);
+			FREE(g_L);
+			FREE(g_U);
+			return retval;
 		}
 		memcpy((void *)dp, (void *)&myowndata, sizeof(DispatchData));
 		object->data = dp;
 		retval = (PyObject *) object;
-		goto done;
+		FREE(x_L);
+		FREE(x_U);
+		FREE(g_L);
+		FREE(g_U);
+		return retval;
 	} else {
 		PyErr_SetString(PyExc_MemoryError,
 				"Can't create a new Problem instance");
 		retval = NULL;
-		goto done;
+		FREE(x_L);
+		FREE(x_U);
+		FREE(g_L);
+		FREE(g_U);
+		return retval;
 	}
-
- done:
-	/* Clean up and return */
-	free(x_L);
-	free(x_U);
-	free(g_L);
-	free(g_U);
-
-	return retval;
 }
 
 PyObject *set_intermediate_callback(PyObject * self, PyObject * args)
@@ -474,7 +509,14 @@ PyObject *solve(PyObject * self, PyObject * args)
 
 	if (!PyArg_ParseTuple(args, "O!|O", &PyArray_Type, &x0, &myuserdata)) {
 		retval = NULL;
-		goto done;
+		/* clean up and return */
+		if (retval == NULL) {
+			Py_XDECREF(x);
+			Py_XDECREF(mL);
+			Py_XDECREF(mU);
+		}
+		FREE(newx0);
+		return retval;
 	}
 	if (myuserdata != NULL) {
 		bigfield->userdata = myuserdata;
@@ -487,7 +529,14 @@ PyObject *solve(PyObject * self, PyObject * args)
 		PyErr_SetString(PyExc_TypeError,
 				"nlp objective passed to solve is NULL\n Problem created?\n");
 		retval = NULL;
-		goto done;
+		/* clean up and return */
+		if (retval == NULL) {
+			Py_XDECREF(x);
+			Py_XDECREF(mL);
+			Py_XDECREF(mU);
+		}
+		FREE(newx0);
+		return retval;
 	}
 	if (bigfield->eval_h_python == NULL) {
 		AddIpoptStrOption(nlp, "hessian_approximation",
@@ -502,12 +551,26 @@ PyObject *solve(PyObject * self, PyObject * args)
 	x = (PyArrayObject *) PyArray_SimpleNew(1, dX, PyArray_DOUBLE);
 	if (!x) {
 		retval = PyErr_NoMemory();
-		goto done;
+		/* clean up and return */
+		if (retval == NULL) {
+			Py_XDECREF(x);
+			Py_XDECREF(mL);
+			Py_XDECREF(mU);
+		}
+		FREE(newx0);
+		return retval;
 	}
 	newx0 = (Number *) malloc(sizeof(Number) * n);
 	if (!newx0) {
 		retval = PyErr_NoMemory();
-		goto done;
+		/* clean up and return */
+		if (retval == NULL) {
+			Py_XDECREF(x);
+			Py_XDECREF(mL);
+			Py_XDECREF(mU);
+		}
+		FREE(newx0);
+		return retval;
 	}
 	double *xdata = (double *)x0->data;
 	for (i = 0; i < n; i++)
@@ -531,17 +594,13 @@ PyObject *solve(PyObject * self, PyObject * args)
 			       PyArray_Return(mU),
 			       obj, Py_BuildValue("i", status)
 	    );
-	goto done;
-
- done:
 	/* clean up and return */
 	if (retval == NULL) {
 		Py_XDECREF(x);
 		Py_XDECREF(mL);
 		Py_XDECREF(mU);
 	}
-	free(newx0);
-
+	FREE(newx0);
 	return retval;
 }
 
@@ -579,16 +638,12 @@ static PyMethodDef ipoptMethods[] = {
 
 PyMODINIT_FUNC initpyipopt(void)
 {
-
 	Py_InitModule3("pyipopt", ipoptMethods,
 		       "A hook between Ipopt and Python");
-
 	import_array();		/* Initialize the Numarray module. */
 	/* A segfault will occur if I use numarray without this.. */
-
 	if (PyErr_Occurred())
 		Py_FatalError("Unable to initialize module pyipopt");
-
 	return;
 }
 
