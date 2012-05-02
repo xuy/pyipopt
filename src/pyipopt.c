@@ -597,11 +597,11 @@ PyObject *solve(PyObject * self, PyObject * args)
 			       obj, Py_BuildValue("i", status)
 	    );
 	/* clean up and return */
-	if (retval == NULL) {
-		Py_XDECREF(x);
-		Py_XDECREF(mL);
-		Py_XDECREF(mU);
-	}
+
+	Py_XDECREF(x);
+	Py_XDECREF(mL);
+	Py_XDECREF(mU);
+
 	SAFE_FREE(newx0);
 	return retval;
 }
