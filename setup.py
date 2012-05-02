@@ -2,7 +2,7 @@
 # Modified by Eric Xu
 
 # ========= Edit The Line Below ==============
-IPOPT_DIR='/home/eric/Sketch/Ipopt-3.10.1/'
+IPOPT_DIR='/home/ebogart/Ipopt-3.10.1/build-systemblas/'
 # ========= Edit The Line Above ==============
 
 # ========= Don't touch things below this ====
@@ -31,7 +31,8 @@ setup(name="pyipopt",
     Extension("pyipopt",FILES,
     extra_link_args=['-Wl,--rpath','-Wl,'+ IPOPT_LIB],
     library_dirs=[IPOPT_LIB],
-    libraries=['ipopt','coinblas','coinhsl','coinlapack','coinmetis','coinmumps','dl','m'],
+    libraries=['ipopt','blas','coinhsl','coinmetis',
+               'lapack','dl','m'],
     include_dirs=[numpy_include,IPOPT_INC]),
   ]
 )
