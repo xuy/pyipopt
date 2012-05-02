@@ -640,8 +640,13 @@ static PyMethodDef ipoptMethods[] = {
 
 PyMODINIT_FUNC initpyipopt(void)
 {
+	/* Finish initialization of the problem type */
+        if (PyType_Ready(&IpoptProblemType) < 0)
+		return;
+
 	Py_InitModule3("pyipopt", ipoptMethods,
 		       "A hook between Ipopt and Python");
+
 	import_array();		/* Initialize the Numarray module. */
 	/* A segfault will occur if I use numarray without this.. */
 	if (PyErr_Occurred())
