@@ -591,11 +591,11 @@ PyObject *solve(PyObject * self, PyObject * args)
 	for (i = 0; i < n; i++) {
 		return_x_data[i] = newx0[i];
 	}
-	retval = Py_BuildValue("OOOdO",
+	retval = Py_BuildValue("OOOdi",
 			       PyArray_Return(x),
 			       PyArray_Return(mL),
 			       PyArray_Return(mU),
-			       obj, Py_BuildValue("i", status)
+			       obj, status
 	    );
 	/* clean up and return */
 
