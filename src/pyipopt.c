@@ -20,6 +20,7 @@ static void problem_dealloc(PyObject * self)
 {
 	problem *temp = (problem *) self;
 	SAFE_FREE(temp->data);
+	self->ob_type->tp_free((PyObject*)self);
 }
 
 PyObject *solve(PyObject * self, PyObject * args);
