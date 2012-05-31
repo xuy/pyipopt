@@ -106,9 +106,23 @@ print eval_jac_g(x0, False)
 print eval_h(x0, pi0, 1.0, False)
 print eval_h(x0, pi0, 1.0, True)
 """
+
+""" You can set Ipopt options by calling nlp.num_option, nlp.str_option
+or nlp.int_option. For instance, to set the tolarance by calling
+
+	nlp.num_option('tol', 1e-8)
+
+For a complete list of Ipopt options, refer to
+
+	http://www.coin-or.org/Ipopt/documentation/node59.html
+
+Note that Ipopt distinguishs between Int, Num, and Str options, yet sometimes
+does not explicitly tell you which option is which.  If you are not sure about
+the option's type, just try it in PyIpopt.  If you try to set one type of
+option using the wrong function, Pyipopt will remind you of it. """
+
 print "Going to call solve"
 print x0
-nlp.num_option('tol', 1)
 x, zl, zu, obj, status = nlp.solve(x0)
 # import pdb; pdb.set_trace()
 nlp.close()
