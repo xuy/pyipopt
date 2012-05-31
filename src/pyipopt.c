@@ -20,6 +20,7 @@ static void problem_dealloc(PyObject * self)
 {
 	problem *temp = (problem *) self;
 	SAFE_FREE(temp->data);
+	self->ob_type->tp_free((PyObject*)self);
 }
 
 PyObject *solve(PyObject * self, PyObject * args);
@@ -599,18 +600,18 @@ PyObject *solve(PyObject * self, PyObject * args)
 	for (i = 0; i < n; i++) {
 		return_x_data[i] = newx0[i];
 	}
-	retval = Py_BuildValue("OOOdO",
+	retval = Py_BuildValue("OOOdi",
 			       PyArray_Return(x),
 			       PyArray_Return(mL),
 			       PyArray_Return(mU),
-			       obj, Py_BuildValue("i", status)
+			       obj, status
 	    );
 	/* clean up and return */
-	if (retval == NULL) {
-		Py_XDECREF(x);
-		Py_XDECREF(mL);
-		Py_XDECREF(mU);
-	}
+
+	Py_XDECREF(x);
+	Py_XDECREF(mL);
+	Py_XDECREF(mU);
+
 	SAFE_FREE(newx0);
 	return retval;
 }
@@ -649,8 +650,13 @@ static PyMethodDef ipoptMethods[] = {
 
 PyMODINIT_FUNC initpyipopt(void)
 {
+	/* Finish initialization of the problem type */
+        if (PyType_Ready(&IpoptProblemType) < 0)
+		return;
+
 	Py_InitModule3("pyipopt", ipoptMethods,
 		       "A hook between Ipopt and Python");
+
 	import_array();		/* Initialize the Numarray module. */
 	/* A segfault will occur if I use numarray without this.. */
 	if (PyErr_Occurred())
