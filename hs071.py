@@ -108,6 +108,7 @@ print eval_h(x0, pi0, 1.0, True)
 """
 print "Going to call solve"
 print x0
+nlp.num_option('tol', 1)
 x, zl, zu, obj, status = nlp.solve(x0)
 # import pdb; pdb.set_trace()
 nlp.close()

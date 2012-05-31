@@ -42,7 +42,10 @@ static char PYIPOPT_SET_INTERMEDIATE_CALLBACK_DOC[] =
 static char PYIPOPT_CLOSE_DOC[] = "After all the solving, close the model\n";
 
 static char PYIPOPT_ADD_STR_OPTION_DOC[] =
-    "Set the String option for Ipopt. See the document for Ipopt for more information.\n";
+    "Set the String (char* in C) option for Ipopt. Refer to the Ipopt \n \
+     document for more information about Ipopt options, or use \n \
+       ipopt --print-options \n \
+     to see a list of available options.";
 
 static PyObject *add_str_option(PyObject * self, PyObject * args)
 {
@@ -66,7 +69,10 @@ static PyObject *add_str_option(PyObject * self, PyObject * args)
 }
 
 static char PYIPOPT_ADD_INT_OPTION_DOC[] =
-    "Set the Int option for Ipopt. See the document for Ipopt for more information.\n";
+    "Set the Int (int in C) option for Ipopt. Refer to the Ipopt \n \
+     document for more information about Ipopt options, or use \n \
+       ipopt --print-options \n \
+     to see a list of available options.";
 
 static PyObject *add_int_option(PyObject * self, PyObject * args)
 {
@@ -93,7 +99,10 @@ static PyObject *add_int_option(PyObject * self, PyObject * args)
 }
 
 static char PYIPOPT_ADD_NUM_OPTION_DOC[] =
-    "Set the Number/double option for Ipopt. See the document for Ipopt for more information.\n";
+    "Set the Number (double in C) option for Ipopt. Refer to the Ipopt \n \
+     document for more information about Ipopt options, or use \n \
+       ipopt --print-options \n \
+     to see a list of available options.";
 
 static PyObject *add_num_option(PyObject * self, PyObject * args)
 {
