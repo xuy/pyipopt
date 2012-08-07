@@ -6,10 +6,14 @@ IPOPT_DIR='/home/xuy/local/ScientificResearch/Ipopt/Ipopt-3.10.2/'
 # ========= Edit The Line Above ==============
 
 # ========= Don't touch things below this ====
+import os
 from distutils.core import setup
 from distutils.extension import Extension
 
-IPOPT_LIB=IPOPT_DIR+"lib"
+if os.path.isdir(IPOPT_DIR + 'lib'): 
+    IPOPT_LIB=IPOPT_DIR+"lib"
+else:
+    IPOPT_LIB=IPOPT_DIR+"lib64"
 IPOPT_INC=IPOPT_DIR+"include/coin/"
 
 #find the numpy headers automatically
