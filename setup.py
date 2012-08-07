@@ -2,7 +2,7 @@
 # Modified by Eric Xu
 
 # ========= Edit The Line Below ==============
-IPOPT_DIR='/home/ebogart/Ipopt-3.10.1/build-systemblas/'
+IPOPT_DIR='/home/xuy/local/ScientificResearch/Ipopt/Ipopt-3.10.2/'
 # ========= Edit The Line Above ==============
 
 # ========= Don't touch things below this ====
