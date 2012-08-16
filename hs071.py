@@ -123,7 +123,7 @@ option using the wrong function, Pyipopt will remind you of it. """
 
 print "Going to call solve"
 print x0
-x, zl, zu, obj, status = nlp.solve(x0)
+x, zl, zu, constraint_multipliers, obj, status = nlp.solve(x0)
 # import pdb; pdb.set_trace()
 nlp.close()
 
@@ -138,6 +138,9 @@ print
 print "Solution of the bound multipliers, z_L and z_U"
 print_variable("z_L", zl)
 print_variable("z_U", zu)
+print
+print "Solution of the constraint multipliers, lambda"
+print_variable("lambda", constraint_multipliers)
 print
 print "Objective value"
 print "f(x*) =", obj
