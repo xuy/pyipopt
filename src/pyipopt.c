@@ -414,6 +414,8 @@ static PyObject *create(PyObject * obj, PyObject * args)
 	object = PyObject_NEW(problem, &IpoptProblemType);
 
 	if (object != NULL) {
+		object->n_variables = n;
+		object->m_constraints = m;
 		object->nlp = thisnlp;
 		dp = (DispatchData *) malloc(sizeof(DispatchData));
 		if (!dp) {
