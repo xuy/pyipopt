@@ -507,6 +507,7 @@ PyObject *solve(PyObject * self, PyObject * args)
 
 	IpoptProblem nlp = (IpoptProblem) (temp->nlp);
 	DispatchData *bigfield = (DispatchData *) (temp->data);
+	int m = temp->m_constraints;
 
 	/* int dX[1]; */
 	npy_intp dX[1];
@@ -595,27 +596,29 @@ PyObject *solve(PyObject * self, PyObject * args)
 	for (i = 0; i < n; i++)
 		newx0[i] = xdata[i];
 
+	/* Allocate multiplier arrays */ 
+
 	mL = (PyArrayObject *) PyArray_SimpleNew(1, dX, PyArray_DOUBLE);
 	mU = (PyArrayObject *) PyArray_SimpleNew(1, dX, PyArray_DOUBLE);
-	dlambda[0] = 1; /* nlp->m; */
+	dlambda[0] = m;
 	lambda = (PyArrayObject *) PyArray_SimpleNew(1, dlambda, 
 						     PyArray_DOUBLE);
 
 	/* For status code, see IpReturnCodes_inc.h in Ipopt */
 
 	status =
-	  IpoptSolve(nlp, newx0, NULL, &obj, NULL,/* (double *)lambda->data, */ 
+	  IpoptSolve(nlp, newx0, NULL, &obj, (double *)lambda->data, 
 		     (double *)mL->data, (double *)mU->data, 
 		     (UserDataPtr) bigfield);
 	double *return_x_data = (double *)x->data;
 	for (i = 0; i < n; i++) {
 		return_x_data[i] = newx0[i];
 	}
-	retval = Py_BuildValue("OOOdi", /* "OOOOdi" */
+	retval = Py_BuildValue("OOOOdi", 
 			       PyArray_Return(x),
 			       PyArray_Return(mL),
 			       PyArray_Return(mU),
-			       /* PyArray_Return(lambda), */
+			       PyArray_Return(lambda),
 			       obj, status
 	    );
 	/* clean up and return */
