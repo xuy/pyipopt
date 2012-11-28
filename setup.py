@@ -20,7 +20,9 @@ from distutils.extension import Extension
 
 # NumPy is much easier to install than pyipopt,
 # and is a pyipopt dependency, so require it here.
+# We need it to tell us where the numpy header files are.
 import numpy
+numpy_include = numpy.get_include()
 
 # I personally do not need support for lib64 but I'm keeping it in the code.
 def get_ipopt_lib():
@@ -35,16 +37,13 @@ if IPOPT_LIB is None:
 
 IPOPT_INC = os.path.join(IPOPT_DIR, 'include/coin/')
 
-# Find the numpy headers automatically.
-numpy_include = numpy.get_include()
-
-FILES = ['src/callback.c', 'src/pyipopt.c']
+FILES = ['src/callback.c', 'src/pyipoptcoremodule.c']
 
 # The extra_link_args is commented out here;
 # that line was causing my pyipopt install to not work.
 # Also I am using coinmumps instead of coinhsl.
 pyipopt_extension = Extension(
-        'pyipopt',
+        'pyipoptcore',
         FILES,
         #extra_link_args=['-Wl,--rpath','-Wl,'+ IPOPT_LIB],
         library_dirs=[IPOPT_LIB],
@@ -65,6 +64,9 @@ setup(
         author="Eric Xu",
         author_email="xu.mathena@gmail.com",
         url="https://github.com/xuy/pyipopt",
+        packages=['pyipopt'],
+        package_dir={'pyipopt' : 'pyipoptpackage'},
+        ext_package='pyipopt',
         ext_modules=[pyipopt_extension],
         )
 

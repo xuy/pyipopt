@@ -160,7 +160,7 @@ PyObject *problem_getattr(PyObject * self, char *attrname)
 PyTypeObject IpoptProblemType = {
 	PyObject_HEAD_INIT(NULL)
 	    0,			/* ob_size */
-	"pyipopt.Problem",	/* tp_name */
+	"pyipoptcore.Problem",	/* tp_name */
 	sizeof(problem),	/* tp_basicsize */
 	0,			/* tp_itemsize */
 	problem_dealloc,	/* tp_dealloc */
@@ -648,19 +648,19 @@ static PyMethodDef ipoptMethods[] = {
 	{NULL, NULL}
 };
 
-PyMODINIT_FUNC initpyipopt(void)
+PyMODINIT_FUNC initpyipoptcore(void)
 {
 	/* Finish initialization of the problem type */
         if (PyType_Ready(&IpoptProblemType) < 0)
 		return;
 
-	Py_InitModule3("pyipopt", ipoptMethods,
+	Py_InitModule3("pyipoptcore", ipoptMethods,
 		       "A hook between Ipopt and Python");
 
 	import_array();		/* Initialize the Numarray module. */
 	/* A segfault will occur if I use numarray without this.. */
 	if (PyErr_Occurred())
-		Py_FatalError("Unable to initialize module pyipopt");
+		Py_FatalError("Unable to initialize module pyipoptcore");
 	return;
 }
 

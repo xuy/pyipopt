@@ -504,6 +504,7 @@ eval_h(Index n, Number * x, Bool new_x, Number obj_factor,
 		return FALSE;
 	}
 	if (values == NULL) {
+    logger("[Callback:E] eval_h (1a)");
 		PyObject *newx = Py_True;
 		PyObject *objfactor = Py_BuildValue("d", obj_factor);
 		PyObject *lagrange = Py_True;
@@ -519,12 +520,22 @@ eval_h(Index n, Number * x, Bool new_x, Number obj_factor,
           "(OOOO)", newx, lagrange, objfactor, Py_True);
     }
 
+    if (arglist == NULL) {
+      logger("[Error] failed to build arglist for eval_h");
+			PyErr_Print();
+      return FALSE;
+    } else {
+      logger("[Logspam] built arglist for eval_h");
+    }
+
 		PyObject *result = PyObject_CallObject(myowndata->eval_h_python, arglist);
 
     if (result == NULL) {
       logger("[Error] Python function eval_h returns NULL");
 			PyErr_Print();
       return FALSE;
+    } else {
+      logger("[Logspam] Python function eval_h returns non-NULL");
     }
 
     int result_size = PyTuple_Size(result);
@@ -541,6 +552,8 @@ eval_h(Index n, Number * x, Bool new_x, Number obj_factor,
       return FALSE;
     }
 
+    logger("[Callback:E] eval_h (tuple is the right length)");
+
 		PyArrayObject *row = (PyArrayObject *) PyTuple_GetItem(result, 0);
 		PyArrayObject *col = (PyArrayObject *) PyTuple_GetItem(result, 1);
 
@@ -556,11 +569,15 @@ eval_h(Index n, Number * x, Bool new_x, Number obj_factor,
 			 */
 		}
 
+    logger("[Callback:E] eval_h (clearing stuff now)");
+
 		Py_DECREF(objfactor);
 		Py_DECREF(result);
 		Py_CLEAR(arglist);
-		logger("[Callback:R] eval_h (1)");
+		logger("[Callback:R] eval_h (1b)");
 	} else {
+		logger("[Callback:R] eval_h (2a)");
+
 		PyObject *objfactor = Py_BuildValue("d", obj_factor);
 
 		dims[0] = n;
@@ -625,7 +642,7 @@ eval_h(Index n, Number * x, Bool new_x, Number obj_factor,
 		Py_CLEAR(objfactor);
 		Py_DECREF(result);
 		Py_CLEAR(arglist);
-		logger("[Callback:R] eval_h (2)");
+		logger("[Callback:R] eval_h (2b)");
 	}
 	return TRUE;
 }
