@@ -156,6 +156,9 @@ def fmin_unconstrained(f, x0, fprime, fhess=None):
     # so that the callback object will not be destroyed
     # until nlp is closed.
     nlp, partial_h = create_unconstrained(f, nvar, fprime, fhess)
+    #FIXME: do something about this...
+    #http://www.coin-or.org/Ipopt/documentation/node68.html
+    nlp.num_option('tol', 1e-12)
     results = nlp.solve(x0)
     nlp.close()
     return results
