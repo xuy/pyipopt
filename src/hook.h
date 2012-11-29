@@ -61,6 +61,8 @@ void logger(const char *fmt, ...);
 typedef struct {
 	PyObject_HEAD IpoptProblem nlp;
 	DispatchData *data;
+	Index n_variables;
+	Index m_constraints;
 } problem;
 
 #endif				//  PY_IPOPT_HOOK_
