@@ -12,20 +12,9 @@
 #define SAFE_FREE(p) {if (p) {free(p); (p)= NULL;}}
 #endif
 
-int user_log_level = TERSE;
-
-/* Object Section */
-/* sig of this is void foo(PyO*) */
-static void problem_dealloc(PyObject * self)
-{
-	problem *temp = (problem *) self;
-	SAFE_FREE(temp->data);
-	self->ob_type->tp_free((PyObject*)self);
-}
-
-PyObject *solve(PyObject * self, PyObject * args);
-PyObject *set_intermediate_callback(PyObject * self, PyObject * args);
-PyObject *close_model(PyObject * self, PyObject * args);
+/*
+ * Let's put the static char docs at the beginning of this file...
+ */
 
 static char PYIPOPT_SOLVE_DOC[] = "solve(x) -> (x, ml, mu, obj)\n \
   \n                                                        \
@@ -48,6 +37,74 @@ static char PYIPOPT_ADD_STR_OPTION_DOC[] =
        ipopt --print-options \n \
      to see a list of available options.";
 
+static char PYIPOPT_ADD_INT_OPTION_DOC[] =
+    "Set the Int (int in C) option for Ipopt. Refer to the Ipopt \n \
+     document for more information about Ipopt options, or use \n \
+       ipopt --print-options \n \
+     to see a list of available options.";
+
+static char PYIPOPT_ADD_NUM_OPTION_DOC[] =
+    "Set the Number (double in C) option for Ipopt. Refer to the Ipopt \n \
+     document for more information about Ipopt options, or use \n \
+       ipopt --print-options \n \
+     to see a list of available options.";
+
+static char PYIPOPT_CREATE_DOC[] =
+    "create(n, xl, xu, m, gl, gu, nnzj, nnzh, eval_f, eval_grad_f, eval_g, eval_jac_g) -> Boolean\n \
+       \n \
+       Create a problem instance and return True if succeed  \n \
+       \n \
+       n is the number of variables, \n \
+       xl is the lower bound of x as bounded constraints \n \
+       xu is the upper bound of x as bounded constraints \n \
+               both xl, xu should be one dimension arrays with length n \n \
+       \n \
+       m is the number of constraints, \n \
+       gl is the lower bound of constraints \n \
+       gu is the upper bound of constraints \n \
+               both gl, gu should be one dimension arrays with length m \n \
+       nnzj is the number of nonzeros in Jacobi matrix \n \
+       nnzh is the number of non-zeros in Hessian matrix, you can set it to 0 \n \
+       \n \
+       eval_f is the call back function to calculate objective value, \n \
+               it takes one single argument x as input vector \n \
+       eval_grad_f calculates gradient for objective function \n \
+       eval_g calculates the constraint values and return an array \n \
+       eval_jac_g calculates the Jacobi matrix. It takes two arguments, \n \
+               the first is the variable x and the second is a Boolean flag \n \
+               if the flag is true, it supposed to return a tuple (row, col) \n \
+                       to indicate the sparse Jacobi matrix's structure. \n \
+               if the flag is false if returns the values of the Jacobi matrix \n \
+                       with length nnzj \n \
+       eval_h calculates the hessian matrix, it's optional. \n \
+               if omitted, please set nnzh to 0 and Ipopt will use approximated hessian \n \
+               which will make the convergence slower. ";
+
+static char PYIPOPT_LOG_DOC[] = "set_loglevel(level)\n \
+    \n \
+    Set the log level of PyIPOPT \n \
+    levels: \n \
+        0:  Terse,    no log from pyipopt \n \
+        1:  Moderate, logs for ipopt \n \
+        2:  Verbose,  logs for both ipopt and pyipopt. \n";
+
+
+
+int user_log_level = TERSE;
+
+/* Object Section */
+/* sig of this is void foo(PyO*) */
+static void problem_dealloc(PyObject * self)
+{
+	problem *temp = (problem *) self;
+	SAFE_FREE(temp->data);
+	self->ob_type->tp_free((PyObject*)self);
+}
+
+PyObject *solve(PyObject * self, PyObject * args);
+PyObject *set_intermediate_callback(PyObject * self, PyObject * args);
+PyObject *close_model(PyObject * self, PyObject * args);
+
 static PyObject *add_str_option(PyObject * self, PyObject * args)
 {
 	problem *temp = (problem *) self;
@@ -68,12 +125,6 @@ static PyObject *add_str_option(PyObject * self, PyObject * args)
 				    "%s is not a valid string option", param);
 	}
 }
-
-static char PYIPOPT_ADD_INT_OPTION_DOC[] =
-    "Set the Int (int in C) option for Ipopt. Refer to the Ipopt \n \
-     document for more information about Ipopt options, or use \n \
-       ipopt --print-options \n \
-     to see a list of available options.";
 
 static PyObject *add_int_option(PyObject * self, PyObject * args)
 {
@@ -98,12 +149,6 @@ static PyObject *add_int_option(PyObject * self, PyObject * args)
 				    "%s is not a valid int option", param);
 	}
 }
-
-static char PYIPOPT_ADD_NUM_OPTION_DOC[] =
-    "Set the Number (double in C) option for Ipopt. Refer to the Ipopt \n \
-     document for more information about Ipopt options, or use \n \
-       ipopt --print-options \n \
-     to see a list of available options.";
 
 static PyObject *add_num_option(PyObject * self, PyObject * args)
 {
@@ -182,44 +227,12 @@ PyTypeObject IpoptProblemType = {
 	"The IPOPT problem object in python",	/* tp_doc */
 };
 
-static char PYIPOPT_CREATE_DOC[] =
-    "create(n, xl, xu, m, gl, gu, nnzj, nnzh, eval_f, eval_grad_f, eval_g, eval_jac_g) -> Boolean\n \
-       \n \
-       Create a problem instance and return True if succeed  \n \
-       \n \
-       n is the number of variables, \n \
-       xl is the lower bound of x as bounded constraints \n \
-       xu is the upper bound of x as bounded constraints \n \
-               both xl, xu should be one dimension arrays with length n \n \
-       \n \
-       m is the number of constraints, \n \
-       gl is the lower bound of constraints \n \
-       gu is the upper bound of constraints \n \
-               both gl, gu should be one dimension arrays with length m \n \
-       nnzj is the number of nonzeros in Jacobi matrix \n \
-       nnzh is the number of non-zeros in Hessian matrix, you can set it to 0 \n \
-       \n \
-       eval_f is the call back function to calculate objective value, \n \
-               it takes one single argument x as input vector \n \
-       eval_grad_f calculates gradient for objective function \n \
-       eval_g calculates the constraint values and return an array \n \
-       eval_jac_g calculates the Jacobi matrix. It takes two arguments, \n \
-               the first is the variable x and the second is a Boolean flag \n \
-               if the flag is true, it supposed to return a tuple (row, col) \n \
-                       to indicate the sparse Jacobi matrix's structure. \n \
-               if the flag is false if returns the values of the Jacobi matrix \n \
-                       with length nnzj \n \
-       eval_h calculates the hessian matrix, it's optional. \n \
-               if omitted, please set nnzh to 0 and Ipopt will use approximated hessian \n \
-               which will make the convergence slower. ";
-
-static char PYIPOPT_LOG_DOC[] = "set_loglevel(level)\n \
-    \n \
-    Set the log level of PyIPOPT \n \
-    levels: \n \
-        0:  Terse,    no log from pyipopt \n \
-        1:  Moderate, logs for ipopt \n \
-        2:  Verbose,  logs for both ipopt and pyipopt. \n";
+/*
+ * FIXME:
+ * use module or package constants for the log levels,
+ * either in pyipoptcore or in the parent package.
+ * They are currently #defined in a header file.
+ */
 
 static PyObject *set_loglevel(PyObject * obj, PyObject * args)
 {
@@ -238,6 +251,17 @@ static PyObject *set_loglevel(PyObject * obj, PyObject * args)
 
 static PyObject *create(PyObject * obj, PyObject * args)
 {
+  /*
+   * FIXME:
+   * This function is currently buggy because it is missing some increfs.
+   * In particular, it needs to incref some of the callback function objects
+   * so that Python will not garbage-collect them during the
+   * lifetime of the object which this function creates.
+   * The reason that this bug has escaped attention is probably because
+   * the callbacks have usually been plain def python functions
+   * which are not garbage-collected, but the situation becomes more
+   * complicated when the callbacks are more transient objects.
+   */
 	PyObject *f = NULL;
 	PyObject *gradf = NULL;
 	PyObject *g = NULL;
@@ -248,8 +272,7 @@ static PyObject *create(PyObject * obj, PyObject * args)
 	DispatchData myowndata;
 
 	/*
-	 * I have to create a new python object here, return this python
-	 * object
+	 * I have to create a new python object here, return this python object
 	 */
 
 	int n;			/* Number of var */
