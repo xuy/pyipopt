@@ -115,17 +115,12 @@ def _create(f, nvar, fprime, fhess=None):
             _eval_jac_g,
             ]
     if fhess:
-        partial_h = functools.partial(_eval_h, fhess, nvar)
         nlp_args.extend([
-            partial_h,
+            functools.partial(_eval_h, fhess, nvar),
             _apply_new,
             ])
-    else:
-        partial_h = None
 
-    # create the nlp object and the partial_h
-    #FIXME: the returning of partial_h works around a bug in the C extension
-    #return pyipoptcore.create(*nlp_args), partial_h
+    # create the nlp object
     return pyipoptcore.create(*nlp_args)
 
 def fmin_unconstrained(f, x0, fprime, fhess=None):
@@ -138,23 +133,6 @@ def fmin_unconstrained(f, x0, fprime, fhess=None):
     @return: results in pyipoptcore format
     """
     nvar = len(x0)
-    #FIXME:
-    # The partial_h seems unnecessary here, but it works around a bug.
-    # This bug is in the reference counting within the C extension --
-    # the C extension buggily assumes that callbacks will
-    # never go out of scope while nlp is active,
-    # but this assumption is violated when the callbacks are partial
-    # function evaluation objects.
-    # This problem can be fixed by debugging the C code
-    # so that the nlp object is more grabby with respect to the
-    # python callback objects.
-    # When this is fixed, create_unconstrained will be able to return
-    # only nlp insead of (nlp, partial_h) without segfaulting
-    # when the nlp is solved; in other words, the python framework
-    # needs to know that nlp still cares about the callback object
-    # so that the callback object will not be destroyed
-    # until nlp is closed.
-    #nlp, partial_h = _create(f, nvar, fprime, fhess)
     nlp = _create(f, nvar, fprime, fhess)
     #FIXME: do something about this...
     #http://www.coin-or.org/Ipopt/documentation/node68.html

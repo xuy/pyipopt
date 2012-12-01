@@ -228,12 +228,10 @@ PyTypeObject IpoptProblemType = {
 };
 
 /*
- * FIXME:
- * use module or package constants for the log levels,
+ * FIXME: use module or package constants for the log levels,
  * either in pyipoptcore or in the parent package.
  * They are currently #defined in a header file.
  */
-
 static PyObject *set_loglevel(PyObject * obj, PyObject * args)
 {
 	int l;
@@ -251,21 +249,6 @@ static PyObject *set_loglevel(PyObject * obj, PyObject * args)
 
 static PyObject *create(PyObject * obj, PyObject * args)
 {
-  /*
-   * FIXME:
-   * This function is currently buggy because it is missing some increfs.
-   * In particular, it needs to incref some of the callback function objects
-   * so that Python will not garbage-collect them during the
-   * lifetime of the object which this function creates.
-   * The reason that this bug has escaped attention is probably because
-   * the callbacks have usually been plain def python functions
-   * which are not garbage-collected, but the situation becomes more
-   * complicated when the callbacks are more transient objects.
-   */
-  /*
-   * http://docs.python.org/2/extending/
-   * extending.html#calling-python-functions-from-c
-   */
 	PyObject *f = NULL;
 	PyObject *gradf = NULL;
 	PyObject *g = NULL;
