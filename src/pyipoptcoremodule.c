@@ -262,6 +262,10 @@ static PyObject *create(PyObject * obj, PyObject * args)
    * which are not garbage-collected, but the situation becomes more
    * complicated when the callbacks are more transient objects.
    */
+  /*
+   * http://docs.python.org/2/extending/
+   * extending.html#calling-python-functions-from-c
+   */
 	PyObject *f = NULL;
 	PyObject *gradf = NULL;
 	PyObject *g = NULL;
@@ -275,10 +279,10 @@ static PyObject *create(PyObject * obj, PyObject * args)
 	 * I have to create a new python object here, return this python object
 	 */
 
-	int n;			/* Number of var */
+	int n;			/* Number of variables */
 	PyArrayObject *xL = NULL;
 	PyArrayObject *xU = NULL;
-	int m;			/* Number of con */
+	int m;			/* Number of constraints */
 	PyArrayObject *gL = NULL;
 	PyArrayObject *gU = NULL;
 
@@ -413,6 +417,14 @@ static PyObject *create(PyObject * obj, PyObject * args)
 		g_U[i] = gudata[i];
 	}
 
+  /* Grab the callback objects because we want to use them later. */
+  Py_XINCREF(f);
+  Py_XINCREF(gradf);
+  Py_XINCREF(g);
+  Py_XINCREF(jacg);
+  Py_XINCREF(h);
+  Py_XINCREF(applynew);
+
 	/* create the Ipopt Problem */
 
 	int C_indexstyle = 0;
@@ -425,8 +437,7 @@ static PyObject *create(PyObject * obj, PyObject * args)
 						  &eval_jac_g, &eval_h);
 	logger("[PyIPOPT] Problem created");
 	if (!thisnlp) {
-		PyErr_SetString(PyExc_MemoryError,
-				"Cannot create IpoptProblem instance");
+		PyErr_SetString(PyExc_MemoryError, "Cannot create IpoptProblem instance");
 		retval = NULL;
 		SAFE_FREE(x_L);
 		SAFE_FREE(x_U);
@@ -458,8 +469,7 @@ static PyObject *create(PyObject * obj, PyObject * args)
 		SAFE_FREE(g_U);
 		return retval;
 	} else {
-		PyErr_SetString(PyExc_MemoryError,
-				"Can't create a new Problem instance");
+		PyErr_SetString(PyExc_MemoryError, "Can't create a new Problem instance");
 		retval = NULL;
 		SAFE_FREE(x_L);
 		SAFE_FREE(x_U);
@@ -580,8 +590,7 @@ PyObject *solve(PyObject * self, PyObject * args)
 		return retval;
 	}
 	if (bigfield->eval_h_python == NULL) {
-		AddIpoptStrOption(nlp, "hessian_approximation",
-				  "limited-memory");
+		AddIpoptStrOption(nlp, "hessian_approximation", "limited-memory");
 		/* logger("Can't find eval_h callback function\n"); */
 	}
 	/* allocate space for the initial point and set the values */
@@ -658,6 +667,16 @@ PyObject *solve(PyObject * self, PyObject * args)
 PyObject *close_model(PyObject * self, PyObject * args)
 {
 	problem *obj = (problem *) self;
+  DispatchData *dp = obj->data;
+
+  /* Ungrab the callback functions because we do not need them anymore. */
+  Py_XDECREF(dp->eval_f_python);
+	Py_XDECREF(dp->eval_grad_f_python);
+	Py_XDECREF(dp->eval_g_python);
+	Py_XDECREF(dp->eval_jac_g_python);
+	Py_XDECREF(dp->eval_h_python);
+	Py_XDECREF(dp->apply_new_python);
+
 	FreeIpoptProblem(obj->nlp);
 	obj->nlp = NULL;
 	Py_INCREF(Py_True);
@@ -690,16 +709,19 @@ static PyMethodDef ipoptMethods[] = {
 PyMODINIT_FUNC initpyipoptcore(void)
 {
 	/* Finish initialization of the problem type */
-        if (PyType_Ready(&IpoptProblemType) < 0)
+  if (PyType_Ready(&IpoptProblemType) < 0) {
 		return;
+  }
 
-	Py_InitModule3("pyipoptcore", ipoptMethods,
-		       "A hook between Ipopt and Python");
+	Py_InitModule3(
+      "pyipoptcore", ipoptMethods, "A hook between Ipopt and Python");
 
-	import_array();		/* Initialize the Numarray module. */
+  /* Initialize numpy. */
 	/* A segfault will occur if I use numarray without this.. */
-	if (PyErr_Occurred())
+	import_array();
+	if (PyErr_Occurred()) {
 		Py_FatalError("Unable to initialize module pyipoptcore");
+  }
 	return;
 }
 
