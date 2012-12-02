@@ -12,20 +12,9 @@
 #define SAFE_FREE(p) {if (p) {free(p); (p)= NULL;}}
 #endif
 
-int user_log_level = TERSE;
-
-/* Object Section */
-/* sig of this is void foo(PyO*) */
-static void problem_dealloc(PyObject * self)
-{
-	problem *temp = (problem *) self;
-	SAFE_FREE(temp->data);
-	self->ob_type->tp_free((PyObject*)self);
-}
-
-PyObject *solve(PyObject * self, PyObject * args);
-PyObject *set_intermediate_callback(PyObject * self, PyObject * args);
-PyObject *close_model(PyObject * self, PyObject * args);
+/*
+ * Let's put the static char docs at the beginning of this file...
+ */
 
 static char PYIPOPT_SOLVE_DOC[] = "solve(x) -> (x, ml, mu, obj)\n \
   \n                                                        \
@@ -48,6 +37,74 @@ static char PYIPOPT_ADD_STR_OPTION_DOC[] =
        ipopt --print-options \n \
      to see a list of available options.";
 
+static char PYIPOPT_ADD_INT_OPTION_DOC[] =
+    "Set the Int (int in C) option for Ipopt. Refer to the Ipopt \n \
+     document for more information about Ipopt options, or use \n \
+       ipopt --print-options \n \
+     to see a list of available options.";
+
+static char PYIPOPT_ADD_NUM_OPTION_DOC[] =
+    "Set the Number (double in C) option for Ipopt. Refer to the Ipopt \n \
+     document for more information about Ipopt options, or use \n \
+       ipopt --print-options \n \
+     to see a list of available options.";
+
+static char PYIPOPT_CREATE_DOC[] =
+    "create(n, xl, xu, m, gl, gu, nnzj, nnzh, eval_f, eval_grad_f, eval_g, eval_jac_g) -> Boolean\n \
+       \n \
+       Create a problem instance and return True if succeed  \n \
+       \n \
+       n is the number of variables, \n \
+       xl is the lower bound of x as bounded constraints \n \
+       xu is the upper bound of x as bounded constraints \n \
+               both xl, xu should be one dimension arrays with length n \n \
+       \n \
+       m is the number of constraints, \n \
+       gl is the lower bound of constraints \n \
+       gu is the upper bound of constraints \n \
+               both gl, gu should be one dimension arrays with length m \n \
+       nnzj is the number of nonzeros in Jacobi matrix \n \
+       nnzh is the number of non-zeros in Hessian matrix, you can set it to 0 \n \
+       \n \
+       eval_f is the call back function to calculate objective value, \n \
+               it takes one single argument x as input vector \n \
+       eval_grad_f calculates gradient for objective function \n \
+       eval_g calculates the constraint values and return an array \n \
+       eval_jac_g calculates the Jacobi matrix. It takes two arguments, \n \
+               the first is the variable x and the second is a Boolean flag \n \
+               if the flag is true, it supposed to return a tuple (row, col) \n \
+                       to indicate the sparse Jacobi matrix's structure. \n \
+               if the flag is false if returns the values of the Jacobi matrix \n \
+                       with length nnzj \n \
+       eval_h calculates the hessian matrix, it's optional. \n \
+               if omitted, please set nnzh to 0 and Ipopt will use approximated hessian \n \
+               which will make the convergence slower. ";
+
+static char PYIPOPT_LOG_DOC[] = "set_loglevel(level)\n \
+    \n \
+    Set the log level of PyIPOPT \n \
+    levels: \n \
+        0:  Terse,    no log from pyipopt \n \
+        1:  Moderate, logs for ipopt \n \
+        2:  Verbose,  logs for both ipopt and pyipopt. \n";
+
+
+
+int user_log_level = TERSE;
+
+/* Object Section */
+/* sig of this is void foo(PyO*) */
+static void problem_dealloc(PyObject * self)
+{
+	problem *temp = (problem *) self;
+	SAFE_FREE(temp->data);
+	self->ob_type->tp_free((PyObject*)self);
+}
+
+PyObject *solve(PyObject * self, PyObject * args);
+PyObject *set_intermediate_callback(PyObject * self, PyObject * args);
+PyObject *close_model(PyObject * self, PyObject * args);
+
 static PyObject *add_str_option(PyObject * self, PyObject * args)
 {
 	problem *temp = (problem *) self;
@@ -68,12 +125,6 @@ static PyObject *add_str_option(PyObject * self, PyObject * args)
 				    "%s is not a valid string option", param);
 	}
 }
-
-static char PYIPOPT_ADD_INT_OPTION_DOC[] =
-    "Set the Int (int in C) option for Ipopt. Refer to the Ipopt \n \
-     document for more information about Ipopt options, or use \n \
-       ipopt --print-options \n \
-     to see a list of available options.";
 
 static PyObject *add_int_option(PyObject * self, PyObject * args)
 {
@@ -98,12 +149,6 @@ static PyObject *add_int_option(PyObject * self, PyObject * args)
 				    "%s is not a valid int option", param);
 	}
 }
-
-static char PYIPOPT_ADD_NUM_OPTION_DOC[] =
-    "Set the Number (double in C) option for Ipopt. Refer to the Ipopt \n \
-     document for more information about Ipopt options, or use \n \
-       ipopt --print-options \n \
-     to see a list of available options.";
 
 static PyObject *add_num_option(PyObject * self, PyObject * args)
 {
@@ -160,7 +205,7 @@ PyObject *problem_getattr(PyObject * self, char *attrname)
 PyTypeObject IpoptProblemType = {
 	PyObject_HEAD_INIT(NULL)
 	    0,			/* ob_size */
-	"pyipopt.Problem",	/* tp_name */
+	"pyipoptcore.Problem",	/* tp_name */
 	sizeof(problem),	/* tp_basicsize */
 	0,			/* tp_itemsize */
 	problem_dealloc,	/* tp_dealloc */
@@ -182,45 +227,11 @@ PyTypeObject IpoptProblemType = {
 	"The IPOPT problem object in python",	/* tp_doc */
 };
 
-static char PYIPOPT_CREATE_DOC[] =
-    "create(n, xl, xu, m, gl, gu, nnzj, nnzh, eval_f, eval_grad_f, eval_g, eval_jac_g) -> Boolean\n \
-       \n \
-       Create a problem instance and return True if succeed  \n \
-       \n \
-       n is the number of variables, \n \
-       xl is the lower bound of x as bounded constraints \n \
-       xu is the upper bound of x as bounded constraints \n \
-               both xl, xu should be one dimension arrays with length n \n \
-       \n \
-       m is the number of constraints, \n \
-       gl is the lower bound of constraints \n \
-       gu is the upper bound of constraints \n \
-               both gl, gu should be one dimension arrays with length m \n \
-       nnzj is the number of nonzeros in Jacobi matrix \n \
-       nnzh is the number of non-zeros in Hessian matrix, you can set it to 0 \n \
-       \n \
-       eval_f is the call back function to calculate objective value, \n \
-               it takes one single argument x as input vector \n \
-       eval_grad_f calculates gradient for objective function \n \
-       eval_g calculates the constraint values and return an array \n \
-       eval_jac_g calculates the Jacobi matrix. It takes two arguments, \n \
-               the first is the variable x and the second is a Boolean flag \n \
-               if the flag is true, it supposed to return a tuple (row, col) \n \
-                       to indicate the sparse Jacobi matrix's structure. \n \
-               if the flag is false if returns the values of the Jacobi matrix \n \
-                       with length nnzj \n \
-       eval_h calculates the hessian matrix, it's optional. \n \
-               if omitted, please set nnzh to 0 and Ipopt will use approximated hessian \n \
-               which will make the convergence slower. ";
-
-static char PYIPOPT_LOG_DOC[] = "set_loglevel(level)\n \
-    \n \
-    Set the log level of PyIPOPT \n \
-    levels: \n \
-        0:  Terse,    no log from pyipopt \n \
-        1:  Moderate, logs for ipopt \n \
-        2:  Verbose,  logs for both ipopt and pyipopt. \n";
-
+/*
+ * FIXME: use module or package constants for the log levels,
+ * either in pyipoptcore or in the parent package.
+ * They are currently #defined in a header file.
+ */
 static PyObject *set_loglevel(PyObject * obj, PyObject * args)
 {
 	int l;
@@ -248,14 +259,13 @@ static PyObject *create(PyObject * obj, PyObject * args)
 	DispatchData myowndata;
 
 	/*
-	 * I have to create a new python object here, return this python
-	 * object
+	 * I have to create a new python object here, return this python object
 	 */
 
-	int n;			/* Number of var */
+	int n;			/* Number of variables */
 	PyArrayObject *xL = NULL;
 	PyArrayObject *xU = NULL;
-	int m;			/* Number of con */
+	int m;			/* Number of constraints */
 	PyArrayObject *gL = NULL;
 	PyArrayObject *gU = NULL;
 
@@ -390,6 +400,14 @@ static PyObject *create(PyObject * obj, PyObject * args)
 		g_U[i] = gudata[i];
 	}
 
+  /* Grab the callback objects because we want to use them later. */
+  Py_XINCREF(f);
+  Py_XINCREF(gradf);
+  Py_XINCREF(g);
+  Py_XINCREF(jacg);
+  Py_XINCREF(h);
+  Py_XINCREF(applynew);
+
 	/* create the Ipopt Problem */
 
 	int C_indexstyle = 0;
@@ -402,8 +420,7 @@ static PyObject *create(PyObject * obj, PyObject * args)
 						  &eval_jac_g, &eval_h);
 	logger("[PyIPOPT] Problem created");
 	if (!thisnlp) {
-		PyErr_SetString(PyExc_MemoryError,
-				"Cannot create IpoptProblem instance");
+		PyErr_SetString(PyExc_MemoryError, "Cannot create IpoptProblem instance");
 		retval = NULL;
 		SAFE_FREE(x_L);
 		SAFE_FREE(x_U);
@@ -414,6 +431,8 @@ static PyObject *create(PyObject * obj, PyObject * args)
 	object = PyObject_NEW(problem, &IpoptProblemType);
 
 	if (object != NULL) {
+		object->n_variables = n;
+		object->m_constraints = m;
 		object->nlp = thisnlp;
 		dp = (DispatchData *) malloc(sizeof(DispatchData));
 		if (!dp) {
@@ -433,8 +452,7 @@ static PyObject *create(PyObject * obj, PyObject * args)
 		SAFE_FREE(g_U);
 		return retval;
 	} else {
-		PyErr_SetString(PyExc_MemoryError,
-				"Can't create a new Problem instance");
+		PyErr_SetString(PyExc_MemoryError, "Can't create a new Problem instance");
 		retval = NULL;
 		SAFE_FREE(x_L);
 		SAFE_FREE(x_U);
@@ -505,11 +523,13 @@ PyObject *solve(PyObject * self, PyObject * args)
 
 	IpoptProblem nlp = (IpoptProblem) (temp->nlp);
 	DispatchData *bigfield = (DispatchData *) (temp->data);
+	int m = temp->m_constraints;
 
 	/* int dX[1]; */
 	npy_intp dX[1];
+	npy_intp dlambda[1];
 
-	PyArrayObject *x = NULL, *mL = NULL, *mU = NULL;
+	PyArrayObject *x = NULL, *mL = NULL, *mU = NULL, *lambda = NULL;
 	Number obj;		/* objective value */
 
 	PyObject *retval = NULL;
@@ -526,6 +546,7 @@ PyObject *solve(PyObject * self, PyObject * args)
 			Py_XDECREF(x);
 			Py_XDECREF(mL);
 			Py_XDECREF(mU);
+			Py_XDECREF(lambda);
 		}
 		SAFE_FREE(newx0);
 		return retval;
@@ -546,13 +567,13 @@ PyObject *solve(PyObject * self, PyObject * args)
 			Py_XDECREF(x);
 			Py_XDECREF(mL);
 			Py_XDECREF(mU);
+			Py_XDECREF(lambda);
 		}
 		SAFE_FREE(newx0);
 		return retval;
 	}
 	if (bigfield->eval_h_python == NULL) {
-		AddIpoptStrOption(nlp, "hessian_approximation",
-				  "limited-memory");
+		AddIpoptStrOption(nlp, "hessian_approximation", "limited-memory");
 		/* logger("Can't find eval_h callback function\n"); */
 	}
 	/* allocate space for the initial point and set the values */
@@ -568,6 +589,7 @@ PyObject *solve(PyObject * self, PyObject * args)
 			Py_XDECREF(x);
 			Py_XDECREF(mL);
 			Py_XDECREF(mU);
+			Py_XDECREF(lambda);
 		}
 		SAFE_FREE(newx0);
 		return retval;
@@ -580,6 +602,7 @@ PyObject *solve(PyObject * self, PyObject * args)
 			Py_XDECREF(x);
 			Py_XDECREF(mL);
 			Py_XDECREF(mU);
+			Py_XDECREF(lambda);
 		}
 		SAFE_FREE(newx0);
 		return retval;
@@ -588,22 +611,29 @@ PyObject *solve(PyObject * self, PyObject * args)
 	for (i = 0; i < n; i++)
 		newx0[i] = xdata[i];
 
+	/* Allocate multiplier arrays */ 
+
 	mL = (PyArrayObject *) PyArray_SimpleNew(1, dX, PyArray_DOUBLE);
 	mU = (PyArrayObject *) PyArray_SimpleNew(1, dX, PyArray_DOUBLE);
+	dlambda[0] = m;
+	lambda = (PyArrayObject *) PyArray_SimpleNew(1, dlambda, 
+						     PyArray_DOUBLE);
 
 	/* For status code, see IpReturnCodes_inc.h in Ipopt */
 
 	status =
-	    IpoptSolve(nlp, newx0, NULL, &obj, NULL, (double *)mL->data,
-		       (double *)mU->data, (UserDataPtr) bigfield);
+	  IpoptSolve(nlp, newx0, NULL, &obj, (double *)lambda->data, 
+		     (double *)mL->data, (double *)mU->data, 
+		     (UserDataPtr) bigfield);
 	double *return_x_data = (double *)x->data;
 	for (i = 0; i < n; i++) {
 		return_x_data[i] = newx0[i];
 	}
-	retval = Py_BuildValue("OOOdi",
+	retval = Py_BuildValue("OOOOdi", 
 			       PyArray_Return(x),
 			       PyArray_Return(mL),
 			       PyArray_Return(mU),
+			       PyArray_Return(lambda),
 			       obj, status
 	    );
 	/* clean up and return */
@@ -611,6 +641,7 @@ PyObject *solve(PyObject * self, PyObject * args)
 	Py_XDECREF(x);
 	Py_XDECREF(mL);
 	Py_XDECREF(mU);
+	Py_XDECREF(lambda);
 
 	SAFE_FREE(newx0);
 	return retval;
@@ -619,6 +650,16 @@ PyObject *solve(PyObject * self, PyObject * args)
 PyObject *close_model(PyObject * self, PyObject * args)
 {
 	problem *obj = (problem *) self;
+  DispatchData *dp = obj->data;
+
+  /* Ungrab the callback functions because we do not need them anymore. */
+  Py_XDECREF(dp->eval_f_python);
+	Py_XDECREF(dp->eval_grad_f_python);
+	Py_XDECREF(dp->eval_g_python);
+	Py_XDECREF(dp->eval_jac_g_python);
+	Py_XDECREF(dp->eval_h_python);
+	Py_XDECREF(dp->apply_new_python);
+
 	FreeIpoptProblem(obj->nlp);
 	obj->nlp = NULL;
 	Py_INCREF(Py_True);
@@ -648,19 +689,22 @@ static PyMethodDef ipoptMethods[] = {
 	{NULL, NULL}
 };
 
-PyMODINIT_FUNC initpyipopt(void)
+PyMODINIT_FUNC initpyipoptcore(void)
 {
 	/* Finish initialization of the problem type */
-        if (PyType_Ready(&IpoptProblemType) < 0)
+  if (PyType_Ready(&IpoptProblemType) < 0) {
 		return;
+  }
 
-	Py_InitModule3("pyipopt", ipoptMethods,
-		       "A hook between Ipopt and Python");
+	Py_InitModule3(
+      "pyipoptcore", ipoptMethods, "A hook between Ipopt and Python");
 
-	import_array();		/* Initialize the Numarray module. */
+  /* Initialize numpy. */
 	/* A segfault will occur if I use numarray without this.. */
-	if (PyErr_Occurred())
-		Py_FatalError("Unable to initialize module pyipopt");
+	import_array();
+	if (PyErr_Occurred()) {
+		Py_FatalError("Unable to initialize module pyipoptcore");
+  }
 	return;
 }
 
