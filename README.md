@@ -1,8 +1,7 @@
 PyIpopt
 =======
 
-PyIpopt is a python module that allows you to use [IPOPT](http://www.coin-or.org/Ipopt/) in 
-Python.
+PyIpopt is a python module that allows you to use [IPOPT](http://www.coin-or.org/Ipopt/) in Python. It is developed by Eric Xu at Washington Univerisity and issued under the BSD license.
 
 Installation
 ------------
