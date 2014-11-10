@@ -113,7 +113,7 @@ Bool eval_intermediate_callback(Index alg_mod,	/* 0 is regular, 1 is resto */
 	if (!result)
 		PyErr_Print();
 
-	result_as_long = PyInt_AsLong(result);
+	result_as_long = PyLong_AsLong(result);
 	result_as_bool = (Bool) result_as_long;
 
 	Py_DECREF(result);
