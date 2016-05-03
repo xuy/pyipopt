@@ -12,8 +12,7 @@
 # for my linux distribution was buggy,
 # so by the time you read this the bugs have probably been fixed
 # and you will want to specify a different directory here.
-#IPOPT_DIR = '/usr/local/'
-IPOPT_DIR = '/home/andrecr/store/local/ipopt'
+IPOPT_DIR = '/usr/local/'
 
 import os
 from distutils.core import setup
