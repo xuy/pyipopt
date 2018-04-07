@@ -590,6 +590,17 @@ PyObject *solve(PyObject * self, PyObject * args)
 		SAFE_FREE(newx0);
 		return retval;
 	}
+	if (x0->nd != 1){ //If x0 is not 1-dimensional then solve will fail and cause a segmentation fault.
+		logger("[ERROR] x0 must be a 1-dimensional array");
+		Py_XDECREF(x);
+		Py_XDECREF(mL);
+		Py_XDECREF(mU);
+		Py_XDECREF(lambda);
+		PyErr_SetString(PyExc_TypeError,
+				"x0 passed to solve is not 1-dimensional.");
+		return NULL;
+	}
+
 	if (myuserdata != NULL) {
 		bigfield->userdata = myuserdata;
 		/*
