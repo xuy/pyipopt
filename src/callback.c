@@ -41,10 +41,9 @@ void logger(const char *fmt, ...)
 	if (user_log_level == VERBOSE) {
 		va_list ap;
 		va_start(ap, fmt);
-		vprintf(fmt, ap);
+		PySys_WriteStdout(fmt, ap);
 		va_end(ap);
-		printf("\n");
-		fflush(stdout);
+		PySys_WriteStdout("\n");
 	}
 }
 

@@ -275,7 +275,7 @@ static PyObject *set_loglevel(PyObject * obj, PyObject * args)
 {
 	int l;
 	if (!PyArg_ParseTuple(args, "i", &l)) {
-		printf("l is %d \n", l);
+		PySys_WriteStdout("l is %d \n", l);
 		return NULL;
 	}
 	if (l < 0 || l > 2) {
