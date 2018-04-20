@@ -135,26 +135,9 @@ eval_f(Index n, Number * x, Bool new_x, Number * obj_value, UserDataPtr data)
 	// import_array ();
 
 	import_array1(FALSE);
-	PyObject *arrayx =
-	    PyArray_SimpleNewFromData(1, dims, PyArray_DOUBLE, (char *)x);
+	PyObject *arrayx = PyArray_SimpleNewFromData(1, dims, PyArray_DOUBLE, (char *)x);
 	if (!arrayx)
 		return FALSE;
-
-	if (new_x && myowndata->apply_new_python) {
-		/* Call the python function to applynew */
-		PyObject *arg1;
-		arg1 = Py_BuildValue("(O)", arrayx);
-		PyObject *tempresult = PyObject_CallObject(
-        myowndata->apply_new_python, arg1);
-		if (tempresult == NULL) {
-			logger("[Error] Python function apply_new returns NULL");
-      PyErr_Print();
-			Py_DECREF(arg1);
-			return FALSE;
-		}
-		Py_DECREF(arg1);
-		Py_DECREF(tempresult);
-	}
 
 	PyObject *arglist;
 	if (user_data != NULL) {
@@ -218,21 +201,6 @@ eval_grad_f(Index n, Number * x, Bool new_x, Number * grad_f, UserDataPtr data)
 	if (!arrayx)
 		return FALSE;
 
-	if (new_x && myowndata->apply_new_python) {
-		/* Call the python function to applynew */
-		PyObject *arg1 = Py_BuildValue("(O)", arrayx);
-		PyObject *tempresult = PyObject_CallObject(
-        myowndata->apply_new_python, arg1);
-		if (tempresult == NULL) {
-			logger("[Error] Python function apply_new returns NULL");
-      PyErr_Print();
-			Py_DECREF(arg1);
-			return FALSE;
-		}
-		Py_DECREF(arg1);
-		Py_DECREF(tempresult);
-	}
-
 	PyObject *arglist;
 	if (user_data != NULL)
 		arglist = Py_BuildValue("(OO)", arrayx, (PyObject *) user_data);
@@ -295,21 +263,6 @@ eval_g(Index n, Number * x, Bool new_x, Index m, Number * g, UserDataPtr data)
 	    PyArray_SimpleNewFromData(1, dims, PyArray_DOUBLE, (char *)x);
 	if (!arrayx)
 		return FALSE;
-
-	if (new_x && myowndata->apply_new_python) {
-		/* Call the python function to applynew */
-		PyObject *arg1 = Py_BuildValue("(O)", arrayx);
-		PyObject *tempresult = PyObject_CallObject(
-        myowndata->apply_new_python, arg1);
-		if (tempresult == NULL) {
-			logger("[Error] Python function apply_new returns NULL");
-      PyErr_Print();
-			Py_DECREF(arg1);
-			return FALSE;
-		}
-		Py_DECREF(arg1);
-		Py_DECREF(tempresult);
-	}
 
 	PyObject *arglist;
 	if (user_data != NULL)
@@ -420,27 +373,11 @@ eval_jac_g(Index n, Number * x, Bool new_x,
 		Py_CLEAR(arglist);
 		//logger("[Callback:R] eval_jac_g(1)");
 	} else {
-		PyObject *arrayx =
-		    PyArray_SimpleNewFromData(1, dims, PyArray_DOUBLE,
-					      (char *)x);
+		PyObject *arrayx = PyArray_SimpleNewFromData(1, dims, PyArray_DOUBLE,(char *)x);
 
 		if (!arrayx)
 			return FALSE;
 
-		if (new_x && myowndata->apply_new_python) {
-			/* Call the python function to applynew */
-			PyObject *arg1 = Py_BuildValue("(O)", arrayx);
-			PyObject *tempresult =
-			    PyObject_CallObject(myowndata->apply_new_python,
-						arg1);
-			if (tempresult == NULL) {
-				logger("[Error] Python function apply_new returns NULL");
-				Py_DECREF(arg1);
-				return FALSE;
-			}
-			Py_DECREF(arg1);
-			Py_DECREF(tempresult);
-		}
 		PyObject *arglist;
 		if (user_data != NULL)
 			arglist = Py_BuildValue("(OOO)",
@@ -586,20 +523,6 @@ eval_h(Index n, Number * x, Bool new_x, Number obj_factor,
 		if (!arrayx)
 			return FALSE;
 
-		if (new_x && myowndata->apply_new_python) {
-			/* Call the python function to applynew  */
-			PyObject *arg1 = Py_BuildValue("(O)", arrayx);
-			PyObject *tempresult = PyObject_CallObject(
-          myowndata->apply_new_python, arg1);
-			if (tempresult == NULL) {
-				logger("[Error] Python function apply_new returns NULL");
-        PyErr_Print();
-				Py_DECREF(arg1);
-				return FALSE;
-			}
-			Py_DECREF(arg1);
-			Py_DECREF(tempresult);
-		}
 		dims2[0] = m;
 		PyObject *lagrangex = PyArray_SimpleNewFromData(
         1, dims2, PyArray_DOUBLE, (char *)lambda);
