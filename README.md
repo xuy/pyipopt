@@ -60,7 +60,7 @@ The file "hs071.py" contains a toy optimization problem. If everything is OK, py
 
 Pyipopt is a legitimate Python module, you can inspect it by using standard Python commands like "dir" or "help". All functions in pyipopt are well documented. 
 
-Since Hessian estimation is usually tedious, Ipopt can solve problems without Hessian estimation. Pyipopt also supports this feature. The file "hs071.py" demonstrates the idea. If you provide the pyipopt.create function with an "eval_h" callback function as well as the "apply_new" callback function, Ipopt will delegate the Hessian matrix calculation to your function (otherwise Ipopt will approximate Hessian for you).
+Since Hessian estimation is usually tedious, Ipopt can solve problems without Hessian estimation. Pyipopt also supports this feature. The file "hs071.py" demonstrates the idea. If you provide the pyipopt.create function with an "eval_h" callback function Ipopt will delegate the Hessian matrix calculation to your function (otherwise Ipopt will approximate Hessian for you).
 
 Contributing
 ------------
