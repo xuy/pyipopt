@@ -1,7 +1,7 @@
 PyIpopt
 =======
 
-PyIpopt is a python module that allows you to use [IPOPT](http://www.coin-or.org/Ipopt/) in Python. It is developed by Eric Xu at Washington Univerisity and issued under the BSD license.
+PyIpopt is a python module that allows you to use [Ipopt](http://www.coin-or.org/Ipopt/) in Python. It is developed by Eric Xu when he was a PhD student at [Washington University](https://wustl.edu/) and issued under the BSD license.
 
 Installation
 ------------
@@ -58,9 +58,9 @@ To see if you have PyIpopt ready, use the following command under the pyipopt's 
 	
 The file "hs071.py" contains a toy optimization problem. If everything is OK, pyipopt will invoke Ipopt to solve it for you. This python file is self-documented and can be used as a template for writing your own optimization problems. 
 
-Pyipopt is a legitimate Python module, you can inspect it by using standard Python commands like "dir" or "help". All functions in pyipopt are well documented. 
+Pyipopt is a legitimate Python module, you can inspect it by using standard Python commands like "dir" or "help". All functions in pyipopt are documented in details. 
 
-Since Hessian estimation is usually tedious, Ipopt can solve problems without Hessian estimation. Pyipopt also supports this feature. The file "hs071.py" demonstrates the idea. If you provide the pyipopt.create function with an "eval_h" callback function Ipopt will delegate the Hessian matrix calculation to your function (otherwise Ipopt will approximate Hessian for you).
+**Hessian Estimation**: since Hessian estimation is usually tedious, Ipopt can solve problems without Hessian estimation. Pyipopt also supports this feature. The file "hs071.py" demonstrates the idea. If you provide the pyipopt.create function with an "eval_h" callback function as well as the "apply_new" callback function, Ipopt will delegate the Hessian matrix calculation to your function (otherwise Ipopt will approximate Hessian for you).
 
 Contributing
 ------------
@@ -69,7 +69,7 @@ Contributing
 2. Create a branch (`git checkout -b my_pyipopt`)
 3. Commit your changes (`git commit -am "your awesome message"`)
 4. Push to the branch (`git push origin my_pyipopt`)
-5. Create an Issue with a link to your branch
+5. Create a pull request
 6. Nag me about it if I am lazy.
 
 Troubleshooting
@@ -96,7 +96,7 @@ and issue $make to ensure you can compile and run the toy example supplied by Ip
 	ImportError: /usr/lib/libipopt.so.0: undefined symbol: _gfortran_XXX
 
 * Solution: 
-    check if your hs071_c example work. It is very likely that your ipopt library is not correctly compiled. 
+    check if your `hs071_c` example work. It is very likely that your ipopt library is not correctly compiled. 
 
 
 * Error:
