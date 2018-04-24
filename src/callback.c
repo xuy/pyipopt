@@ -557,7 +557,6 @@ eval_h(Index n, Number * x, Bool new_x, Number obj_factor,
 		double *tempdata = (double *)result->data;
 		for (i = 0; i < nele_hess; i++) {
 			values[i] = tempdata[i];
-      logger("PyDebug %lf", values[i]);
 		}
 		Py_CLEAR(arrayx);
 		Py_CLEAR(lagrangex);
