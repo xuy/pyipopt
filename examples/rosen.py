@@ -9,6 +9,7 @@ Also check some bug reports here:
 http://code.google.com/p/pyipopt/issues/list
 ?can=1&q=&colspec=ID+Type+Status+Priority+Milestone+Owner+Summary&cells=tiles
 """
+from __future__ import print_function
 
 import numpy
 import scipy.optimize
@@ -38,11 +39,11 @@ def eval_jac_g(X, flag, user_data=None):
     @param X: parameter values
     @param flag: this asks for the sparsity structure
     """
-    print 'eval_jac_g'
-    print X
-    print flag
-    print user_data
-    print
+    print('eval_jac_g')
+    print(X)
+    print(flag)
+    print(user_data)
+    print()
     #XXX
     if flag:
         rows = numpy.array([], dtype=int)
@@ -60,13 +61,13 @@ def eval_h(X, lagrange, obj_factor, flag, user_data=None):
     @param flag: this asks for the sparsity structure
     """
     #XXX
-    print 'eval_h:'
-    print X
-    print lagrange
-    print obj_factor
-    print flag
-    print user_data
-    print
+    print('eval_h:')
+    print(X)
+    print(lagrange)
+    print(obj_factor)
+    print(flag)
+    print(user_data)
+    print()
     rows = numpy.array([0, 1, 1], dtype=int)
     cols = numpy.array([0, 0, 1], dtype=int)
     if flag:
@@ -88,9 +89,9 @@ def apply_new(X):
     What is this?
     """
     #XXX
-    print 'apply_new:'
-    print X
-    print
+    print('apply_new:')
+    print(X)
+    print()
     return True
 
 
@@ -144,7 +145,7 @@ def main():
     nlp.close()
 
     # report the results
-    print results
+    print(results)
 
 
 if __name__ == '__main__':
