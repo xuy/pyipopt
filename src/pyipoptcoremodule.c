@@ -16,12 +16,16 @@
  * Let's put the static char docs at the beginning of this file...
  */
 
-static char PYIPOPT_SOLVE_DOC[] = "solve(x) -> (x, ml, mu, obj)\n \
+static char PYIPOPT_SOLVE_DOC[] = "solve(x, [mult_g, mult_x_L, mult_x_U]) -> (x, ml, mu, obj)\n \
   \n                                                        \
   Call Ipopt to solve problem created before and return  \n \
   a tuple that contains final solution x, upper and lower\n \
   bound for multiplier, final objective function obj, \n \
-  and the return status of ipopt. \n";
+  and the return status of ipopt. \n \
+  \n \
+  mult_g, mult_x_L, mult_x_U are optional keyword only arguments \n \
+  allowing previous values of bound multipliers to be passed in warm \n \
+  start applications.";
 
 static char PYIPOPT_SET_INTERMEDIATE_CALLBACK_DOC[] =
     "set_intermediate_callback(callback_function)\n \
@@ -101,7 +105,7 @@ static void problem_dealloc(PyObject * self)
 	Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
-PyObject *solve(PyObject * self, PyObject * args);
+PyObject *solve(PyObject * self, PyObject * args, PyObject * keywds);
 PyObject *set_intermediate_callback(PyObject * self, PyObject * args);
 PyObject *close_model(PyObject * self, PyObject * args);
 
@@ -174,7 +178,7 @@ static PyObject *add_num_option(PyObject * self, PyObject * args)
 }
 
 PyMethodDef problem_methods[] = {
-	{"solve", solve, METH_VARARGS, PYIPOPT_SOLVE_DOC}
+  {"solve", (PyCFunction)solve, METH_VARARGS | METH_KEYWORDS, PYIPOPT_SOLVE_DOC}
 	,
 	{"set_intermediate_callback", set_intermediate_callback, METH_VARARGS,
 	 PYIPOPT_SET_INTERMEDIATE_CALLBACK_DOC}
@@ -551,8 +555,39 @@ PyObject *set_intermediate_callback(PyObject * self, PyObject * args)
 	}
 }
 
-PyObject *solve(PyObject * self, PyObject * args)
+// too much cut and paste ... 
+#define SOLVE_CLEANUP() {  \
+  /* clean up and return */ \
+  if (retval == NULL) {   \
+    Py_XDECREF(x);        \
+    Py_XDECREF(mL);       \
+    Py_XDECREF(mU);       \
+    Py_XDECREF(lambda);   \
+  }                       \
+  SAFE_FREE(newx0);       \
+  return retval;          \
+  }
+
+#define SOLVE_CLEANUP_NULL() { \
+  retval = NULL;               \
+  SOLVE_CLEANUP()              \
+}
+
+#define SOLVE_CLEANUP_MEMORY() { \
+  retval = PyErr_NoMemory();     \
+  SOLVE_CLEANUP()                \
+}
+
+#define SOLVE_CLEANUP_TYPE(err) {          \
+  PyErr_SetString(PyExc_TypeError, err);   \
+  retval = NULL;                           \
+  SOLVE_CLEANUP()                          \
+}
+
+PyObject *solve(PyObject * self, PyObject * args, PyObject * keywds)
 {
+  static char *kwlist[] = {"x0", "userdata", "mult_g", "mult_x_L", "mult_x_U", NULL};
+        
 	enum ApplicationReturnStatus status;	/* Solve return code */
 	int i;
 	int n;
@@ -569,6 +604,7 @@ PyObject *solve(PyObject * self, PyObject * args)
 	npy_intp dlambda[1];
 
 	PyArrayObject *x = NULL, *mL = NULL, *mU = NULL, *lambda = NULL;
+	PyArrayObject *mL_in = NULL, *mU_in = NULL, *lambda_in = NULL;
 	Number obj;		/* objective value */
 
 	PyObject *retval = NULL;
@@ -578,17 +614,12 @@ PyObject *solve(PyObject * self, PyObject * args)
 
 	Number *newx0 = NULL;
 
-	if (!PyArg_ParseTuple(args, "O!|O", &PyArray_Type, &x0, &myuserdata)) {
-		retval = NULL;
-		/* clean up and return */
-		if (retval == NULL) {
-			Py_XDECREF(x);
-			Py_XDECREF(mL);
-			Py_XDECREF(mU);
-			Py_XDECREF(lambda);
-		}
-		SAFE_FREE(newx0);
-		return retval;
+	if (!PyArg_ParseTupleAndKeywords(args, keywds, "O!|O$O!O!O!", kwlist, 
+					 &PyArray_Type, &x0, &myuserdata,
+					 &PyArray_Type, &lambda_in, // mult_g 
+					 &PyArray_Type, &mL_in, // mult_x_L
+					 &PyArray_Type, &mU_in)) { // mult_x_Y
+		SOLVE_CLEANUP_NULL()
 	}
 	if (x0->nd != 1){ //If x0 is not 1-dimensional then solve will fail and cause a segmentation fault.
 		logger("[ERROR] x0 must be a 1-dimensional array");
@@ -609,18 +640,7 @@ PyObject *solve(PyObject * self, PyObject * args)
 		 */
 	}
 	if (nlp == NULL) {
-		PyErr_SetString(PyExc_TypeError,
-				"nlp objective passed to solve is NULL\n Problem created?\n");
-		retval = NULL;
-		/* clean up and return */
-		if (retval == NULL) {
-			Py_XDECREF(x);
-			Py_XDECREF(mL);
-			Py_XDECREF(mU);
-			Py_XDECREF(lambda);
-		}
-		SAFE_FREE(newx0);
-		return retval;
+	  SOLVE_CLEANUP_TYPE("nlp objective passed to solve is NULL\n Problem created?\n")
 	}
 	if (bigfield->eval_h_python == NULL) {
 		AddIpoptStrOption(nlp, "hessian_approximation", "limited-memory");
@@ -633,41 +653,60 @@ PyObject *solve(PyObject * self, PyObject * args)
 
 	x = (PyArrayObject *) PyArray_SimpleNew(1, dX, PyArray_DOUBLE);
 	if (!x) {
-		retval = PyErr_NoMemory();
-		/* clean up and return */
-		if (retval == NULL) {
-			Py_XDECREF(x);
-			Py_XDECREF(mL);
-			Py_XDECREF(mU);
-			Py_XDECREF(lambda);
-		}
-		SAFE_FREE(newx0);
-		return retval;
+	  SOLVE_CLEANUP_MEMORY()
 	}
 	newx0 = (Number *) malloc(sizeof(Number) * n);
 	if (!newx0) {
-		retval = PyErr_NoMemory();
-		/* clean up and return */
-		if (retval == NULL) {
-			Py_XDECREF(x);
-			Py_XDECREF(mL);
-			Py_XDECREF(mU);
-			Py_XDECREF(lambda);
-		}
-		SAFE_FREE(newx0);
-		return retval;
+	  SOLVE_CLEANUP_MEMORY()
 	}
 	double *xdata = (double *)x0->data;
+	double *ydata;
 	for (i = 0; i < n; i++)
 		newx0[i] = xdata[i];
 
 	/* Allocate multiplier arrays */ 
-
+	int num_passed = 0; // must pass all or none
 	mL = (PyArrayObject *) PyArray_SimpleNew(1, dX, PyArray_DOUBLE);
+	if(mL_in != NULL){
+	  if(mL_in->dimensions[0] != n){
+	    SOLVE_CLEANUP_TYPE("mult_x_L must be the same length as x0.\n")
+	  }
+	  num_passed += 1;
+	  xdata = (double *) mL->data;
+	  ydata = (double *) mL_in->data;
+	  for (i = 0; i < dX[0]; i++)
+	    xdata[i] = ydata[i];
+	}
 	mU = (PyArrayObject *) PyArray_SimpleNew(1, dX, PyArray_DOUBLE);
+	if(mU_in != NULL){
+	  if(mU_in->dimensions[0] != n){
+	    SOLVE_CLEANUP_TYPE("mult_x_U must be the same length as x0.\n")
+	  }
+	  num_passed += 1;
+	  xdata = (double *) mU->data;
+	  ydata = (double *) mU_in->data;
+	  for (i = 0; i < dX[0]; i++)
+	    xdata[i] = ydata[i];
+	}
 	dlambda[0] = m;
 	lambda = (PyArrayObject *) PyArray_SimpleNew(1, dlambda, 
 						     PyArray_DOUBLE);
+	if(lambda_in != NULL){
+	  if(lambda_in->dimensions[0] != m){
+	    SOLVE_CLEANUP_TYPE("mult_g must be the same length as the constraints.\n")
+	  }
+	  num_passed += 1;
+	  xdata = (double *) lambda->data;
+	  ydata = (double *) lambda_in->data;
+	  for (i = 0; i < dlambda[0]; i++)
+	    xdata[i] = ydata[i];
+	}
+
+	// some error checking for warm start
+	if( (num_passed != 0) & (num_passed != 3) ){
+	  SOLVE_CLEANUP_TYPE("If passing multipliers, you must pass them all.\n")
+	}
+
 
 	/* For status code, see IpReturnCodes_inc.h in Ipopt */
 
@@ -692,6 +731,7 @@ PyObject *solve(PyObject * self, PyObject * args)
 	Py_XDECREF(mL);
 	Py_XDECREF(mU);
 	Py_XDECREF(lambda);
+
 
 	SAFE_FREE(newx0);
 	return retval;
