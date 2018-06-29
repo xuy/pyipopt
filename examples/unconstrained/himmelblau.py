@@ -3,6 +3,7 @@ Minimize a standard unconstrained test function.
 
 This example uses algopy for the gradient and hessian.
 """
+from __future__ import print_function
 
 import functools
 
@@ -39,7 +40,7 @@ def main():
             fprime=functools.partial(eval_grad, himmelblau),
             fhess=functools.partial(eval_hess, himmelblau),
             )
-    print results
+    print(results)
 
 if __name__ == '__main__':
     main()
