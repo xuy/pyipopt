@@ -44,7 +44,6 @@ typedef struct {
 	PyObject *eval_g_python;
 	PyObject *eval_jac_g_python;
 	PyObject *eval_h_python;
-	PyObject *apply_new_python;
 	PyObject *eval_intermediate_callback_python;
 	PyObject *userdata;
 } DispatchData;

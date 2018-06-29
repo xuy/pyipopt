@@ -293,7 +293,6 @@ static PyObject *create(PyObject * obj, PyObject * args)
 	PyObject *g = NULL;
 	PyObject *jacg = NULL;
 	PyObject *h = NULL;
-	PyObject *applynew = NULL;
 
 	DispatchData myowndata;
 
@@ -333,18 +332,17 @@ static PyObject *create(PyObject * obj, PyObject * args)
 	myowndata.eval_g_python = NULL;
 	myowndata.eval_jac_g_python = NULL;
 	myowndata.eval_h_python = NULL;
-	myowndata.apply_new_python = NULL;
 	myowndata.userdata = NULL;
 
 	/* "O!", &PyArray_Type &a_x  */
-	if (!PyArg_ParseTuple(args, "iO!O!iO!O!iiOOOO|OO:pyipoptcreate",
+	if (!PyArg_ParseTuple(args, "iO!O!iO!O!iiOOOO|O:pyipoptcreate",
 			      &n, &PyArray_Type, &xL,
 			      &PyArray_Type, &xU,
 			      &m,
 			      &PyArray_Type, &gL,
 			      &PyArray_Type, &gU,
 			      &nele_jac, &nele_hess,
-			      &f, &gradf, &g, &jacg, &h, &applynew)) {
+			      &f, &gradf, &g, &jacg, &h)) {
 		retval = NULL;
 		SAFE_FREE(x_L);
 		SAFE_FREE(x_U);
@@ -386,20 +384,6 @@ static PyObject *create(PyObject * obj, PyObject * args)
 		logger("[PyIPOPT] Ipopt will use Hessian approximation.\n");
 	}
 
-	if (applynew != NULL) {
-		if (PyCallable_Check(applynew)) {
-			myowndata.apply_new_python = applynew;
-		} else {
-			PyErr_SetString(PyExc_TypeError,
-					"Need a callable object for function applynew.");
-			retval = NULL;
-			SAFE_FREE(x_L);
-			SAFE_FREE(x_U);
-			SAFE_FREE(g_L);
-			SAFE_FREE(g_U);
-			return retval;
-		}
-	}
 	if (m < 0 || n < 0) {
 		PyErr_SetString(PyExc_TypeError, "m or n can't be negative");
 		retval = NULL;
@@ -445,7 +429,6 @@ static PyObject *create(PyObject * obj, PyObject * args)
   Py_XINCREF(g);
   Py_XINCREF(jacg);
   Py_XINCREF(h);
-  Py_XINCREF(applynew);
 
 	/* create the Ipopt Problem */
 
@@ -708,7 +691,6 @@ PyObject *close_model(PyObject * self, PyObject * args)
 	Py_XDECREF(dp->eval_g_python);
 	Py_XDECREF(dp->eval_jac_g_python);
 	Py_XDECREF(dp->eval_h_python);
-	Py_XDECREF(dp->apply_new_python);
 
 	FreeIpoptProblem(obj->nlp);
 	obj->nlp = NULL;
