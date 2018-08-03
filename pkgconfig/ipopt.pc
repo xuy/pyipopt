@@ -1,0 +1,20 @@
+# When I installed Ipopt from source, I used the
+# --prefix=/usr/local
+# option, so this is where I want pyipopt to look for my ipopt installation.
+# I only installed from source because the ipopt packaging
+# for my linux distribution was buggy,
+# so by the time you read this the bugs have probably been fixed
+# and you will want to specify a different directory here.
+
+prefix=/usr/local
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include/coin
+
+Name: IPOPT
+Version:
+Description: Interior Point Optimizer
+URL: https://projects.coin-or.org/Ipopt
+Libs: -L${libdir} -lipopt -lcoinblas -lcoinmumps -lcoinmetis -lcoinlapack -lm -ldl
+Cflags: -I${includedir}
+Requires: 

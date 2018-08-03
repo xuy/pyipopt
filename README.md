@@ -19,16 +19,40 @@ PyIpopt depends on the following packages:
 
 First, get the latest source code using:
 
-  $ git clone http://github.com/xuy/pyipopt.git
+	$ git clone http://github.com/xuy/pyipopt.git
 
-In your PyIpopt folder, edit setup.py to reflect the configuration of your system, then do
+Check whether a file `ipopt.pc` was distributed with your Ipopt installation.
+If this is the case and `ipopt.pc` is in the search path of `pkg-config`
+(on unix systems:
+`/usr/lib/pkgconfig`, `/usr/share/pkgconfig`, `/usr/local/lib/pkgconfig`,
+`/usr/local/share/pkgconfig`), nothing has to be modified.
+
+In this case run
 
 	$ python setup.py build
 	$ sudo python setup.py install
+	
+If `pkg-config` is not available for your system, you will need to
+edit the function `fallback_compiler_flags` in `setup.py`.
+	
+If you have an `ipopt.pc` which is not in the `pkg-config` search path,
+specify the path via the `PKG_CONFIG_PATH` environment variable (see below).
+If you cannot find an `ipopt.pc` in your `ipopt` installation, there is an
+example pc file in the directory `pkgconfig`.
+Copy it to a location (best of all directly in a subfolder named
+`pkgconfig` of your Ipopt installation) and edit it to reflect the
+library and include paths of the dependencies.
+
+Then do
+
+```sh
+$ PKG_CONFIG_PATH=<dir containing ipopt.pc> python setup.py build
+$ sudo python setup.py install
+```
 
 ### Test
 
-  $ python hs071.py
+	$ python hs071.py
 
 You should be able to see the result of solving the toy problem.
 
@@ -36,16 +60,18 @@ Usage
 -----
 You can use PyIpopt like this:
 
-	import pyipopt
-	# define your call back functions
-	nlp = pyipopt.create(...)
-	nlp.solve(...)
-	nlp.close()
+```python
+import pyipopt
+# define your call back functions
+nlp = pyipopt.create(...)
+nlp.solve(...)
+nlp.close()
+```
 
-You can also check out hs071.py to see how to use PyIpopt.
+You can also check out `examples/hs071.py` to see how to use PyIpopt.
 
 PyIpopt as a module comes with docstring. You can poke around 
-it by using Python's $help()$ command.
+it by using Python's `help()` command.
 
 Testing
 -------
@@ -54,7 +80,7 @@ I have included an example
 
 To see if you have PyIpopt ready, use the following command under the pyipopt's directory. 
 
-		python hs071.py
+	$ python hs071.py
 	
 The file "hs071.py" contains a toy optimization problem. If everything is OK, pyipopt will invoke Ipopt to solve it for you. This python file is self-documented and can be used as a template for writing your own optimization problems. 
 
@@ -79,8 +105,8 @@ Troubleshooting
 
 PyIpopt links to Ipopt's C library. If that library is not available PyIpopt will fail
 during module initialization. To check the availability of this library, you can go to
-	$IPOPT_DIR/Ipopt/examples/hs071_c/
-and issue $make to ensure you can compile and run the toy example supplied by Ipopt. 
+`$IPOPT_DIR/Ipopt/examples/hs071_c/`
+and issue `make` to ensure you can compile and run the toy example supplied by Ipopt. 
 
 ### Miscellaneous problems
 
@@ -140,5 +166,3 @@ Contact
 Eric Xu <xu.mathena@gmail.com>
 
 Software Engineer @ Google
-
-
