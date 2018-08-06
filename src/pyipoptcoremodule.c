@@ -700,15 +700,18 @@ PyObject *solve(PyObject * self, PyObject * args)
 PyObject *close_model(PyObject * self, PyObject * args)
 {
 	problem *obj = (problem *) self;
-  DispatchData *dp = obj->data;
+	DispatchData *dp = obj->data;
 
   /* Ungrab the callback functions because we do not need them anymore. */
-  Py_XDECREF(dp->eval_f_python);
+	Py_XDECREF(dp->eval_f_python);
 	Py_XDECREF(dp->eval_grad_f_python);
 	Py_XDECREF(dp->eval_g_python);
 	Py_XDECREF(dp->eval_jac_g_python);
 	Py_XDECREF(dp->eval_h_python);
 	Py_XDECREF(dp->apply_new_python);
+
+	free(dp);
+	obj->data = NULL;
 
 	FreeIpoptProblem(obj->nlp);
 	obj->nlp = NULL;
