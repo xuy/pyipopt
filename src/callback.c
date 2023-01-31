@@ -48,11 +48,11 @@ void logger(const char *fmt, ...)
 }
 
 Bool eval_intermediate_callback(ipindex alg_mod,	/* 0 is regular, 1 is resto */
-				ipindex iter_count, Number obj_value,
-				Number inf_pr, Number inf_du,
-				Number mu, Number d_norm,
-				Number regularization_size,
-				Number alpha_du, Number alpha_pr,
+				ipindex iter_count, ipnumber obj_value,
+				ipnumber inf_pr, ipnumber inf_du,
+				ipnumber mu, ipnumber d_norm,
+				ipnumber regularization_size,
+				ipnumber alpha_du, ipnumber alpha_pr,
 				ipindex ls_trials, UserDataPtr data)
 {
 	//logger("[Callback:E]intermediate_callback");
@@ -122,7 +122,7 @@ Bool eval_intermediate_callback(ipindex alg_mod,	/* 0 is regular, 1 is resto */
 }
 
 Bool
-eval_f(ipindex n, Number * x, Bool new_x, Number * obj_value, UserDataPtr data)
+eval_f(ipindex n, ipnumber * x, Bool new_x, ipnumber * obj_value, UserDataPtr data)
 {
 	//logger("[Callback:E] eval_f");
 
@@ -192,7 +192,7 @@ eval_f(ipindex n, Number * x, Bool new_x, Number * obj_value, UserDataPtr data)
 }
 
 Bool
-eval_grad_f(ipindex n, Number * x, Bool new_x, Number * grad_f, UserDataPtr data)
+eval_grad_f(ipindex n, ipnumber * x, Bool new_x, ipnumber * grad_f, UserDataPtr data)
 {
 	//logger("[Callback:E] eval_grad_f");
 
@@ -267,7 +267,7 @@ eval_grad_f(ipindex n, Number * x, Bool new_x, Number * grad_f, UserDataPtr data
 }
 
 Bool
-eval_g(ipindex n, Number * x, Bool new_x, ipindex m, Number * g, UserDataPtr data)
+eval_g(ipindex n, ipnumber * x, Bool new_x, ipindex m, ipnumber * g, UserDataPtr data)
 {
 
 	//logger("[Callback:E] eval_g");
@@ -345,9 +345,9 @@ eval_g(ipindex n, Number * x, Bool new_x, ipindex m, Number * g, UserDataPtr dat
 }
 
 Bool
-eval_jac_g(ipindex n, Number * x, Bool new_x,
+eval_jac_g(ipindex n, ipnumber * x, Bool new_x,
 	   ipindex m, ipindex nele_jac,
-	   ipindex * iRow, ipindex * jCol, Number * values, UserDataPtr data)
+	   ipindex * iRow, ipindex * jCol, ipnumber * values, UserDataPtr data)
 {
 
 	//logger("[Callback:E] eval_jac_g");
@@ -484,10 +484,10 @@ eval_jac_g(ipindex n, Number * x, Bool new_x,
 }
 
 Bool
-eval_h(ipindex n, Number * x, Bool new_x, Number obj_factor,
-       ipindex m, Number * lambda, Bool new_lambda,
+eval_h(ipindex n, ipnumber * x, Bool new_x, ipnumber obj_factor,
+       ipindex m, ipnumber * lambda, Bool new_lambda,
        ipindex nele_hess, ipindex * iRow, ipindex * jCol,
-       Number * values, UserDataPtr data)
+       ipnumber * values, UserDataPtr data)
 {
 	//logger("[Callback:E] eval_h");
 

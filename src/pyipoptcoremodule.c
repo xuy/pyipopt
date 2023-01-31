@@ -409,8 +409,8 @@ static PyObject *create(PyObject * obj, PyObject * args)
 		SAFE_FREE(g_U);
 		return retval;
 	}
-	x_L = (Number *) malloc(sizeof(Number) * n);
-	x_U = (Number *) malloc(sizeof(Number) * n);
+	x_L = (ipnumber *) malloc(sizeof(ipnumber) * n);
+	x_U = (ipnumber *) malloc(sizeof(ipnumber) * n);
 	if (!x_L || !x_U) {
 		retval = PyErr_NoMemory();
 		SAFE_FREE(x_L);
@@ -426,8 +426,8 @@ static PyObject *create(PyObject * obj, PyObject * args)
 		x_U[i] = xudata[i];
 	}
 
-	g_L = (Number *) malloc(sizeof(Number) * m);
-	g_U = (Number *) malloc(sizeof(Number) * m);
+	g_L = (ipnumber *) malloc(sizeof(ipnumber) * m);
+	g_U = (ipnumber *) malloc(sizeof(ipnumber) * m);
 	if (!g_L || !g_U)
 		PyErr_NoMemory();
 
@@ -506,11 +506,10 @@ PyObject *set_intermediate_callback(PyObject * self, PyObject * args)
 	PyObject *intermediate_callback;
 	problem *temp = (problem *) self;
 	IpoptProblem nlp = (IpoptProblem) (temp->nlp);
-	DispatchData myowndata;
+	// DispatchData myowndata;
 	DispatchData *bigfield = (DispatchData *) (temp->data);
-
 	/* Init the myowndata field */
-	myowndata.eval_intermediate_callback_python = NULL;
+	// myowndata.eval_intermediate_callback_python = NULL;
 
 	if (!PyArg_ParseTuple(args, "O", &intermediate_callback)) {
 		return NULL;
@@ -520,31 +519,8 @@ PyObject *set_intermediate_callback(PyObject * self, PyObject * args)
 				"Need a callable object for function!");
 		return NULL;
 	} else {
-
 		bigfield->eval_intermediate_callback_python =
 		    intermediate_callback;
-
-		/* Put a Python function object into this data structure */
-		/*
-		 * myowndata.eval_intermediate_callback_python =
-		 * intermediate_callback;
-		 */
-
-		/* DispatchData *dp = malloc(sizeof(DispatchData)); */
-		/*
-		 * memcpy((void*)dp, (void*)&myowndata,
-		 * sizeof(DispatchData));
-		 */
-		/* bigfield = dp; */
-		/*
-		 * logger( "qqq: inside set_intermediate_callback, bigfield
-		 * is %p\n", bigfield ) ;
-		 */
-		/*
-		 * logger("[PyIPOPT] User specified data field to callback
-		 * function.\n");
-		 */
-
 		SetIntermediateCallback(nlp, eval_intermediate_callback);
 		Py_INCREF(Py_True);
 		return Py_True;
@@ -569,14 +545,14 @@ PyObject *solve(PyObject * self, PyObject * args)
 	npy_intp dlambda[1];
 
 	PyArrayObject *x = NULL, *mL = NULL, *mU = NULL, *lambda = NULL;
-	Number obj;		/* objective value */
+	ipnumber obj;		/* objective value */
 
 	PyObject *retval = NULL;
 	PyArrayObject *x0 = NULL;
 
 	PyObject *myuserdata = NULL;
 
-	Number *newx0 = NULL;
+	ipnumber *newx0 = NULL;
 
 	if (!PyArg_ParseTuple(args, "O!|O", &PyArray_Type, &x0, &myuserdata)) {
 		retval = NULL;
@@ -644,7 +620,7 @@ PyObject *solve(PyObject * self, PyObject * args)
 		SAFE_FREE(newx0);
 		return retval;
 	}
-	newx0 = (Number *) malloc(sizeof(Number) * n);
+	newx0 = (ipnumber *) malloc(sizeof(ipnumber) * n);
 	if (!newx0) {
 		retval = PyErr_NoMemory();
 		/* clean up and return */

@@ -4,7 +4,7 @@
 
 #include "IpStdCInterface.h"
 #include "IpTypes.h"
-#include "numpy/arrayobject.h"
+#include "numpy/ndarrayobject.h"
 #include "Python.h"
 
 #ifndef PY_IPOPT_HOOK_
