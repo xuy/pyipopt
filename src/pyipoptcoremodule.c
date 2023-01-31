@@ -313,10 +313,10 @@ static PyObject *create(PyObject * obj, PyObject * args)
 	int nele_jac;
 	int nele_hess;
 
-	Number *x_L = NULL;	/* lower bounds on x */
-	Number *x_U = NULL;	/* upper bounds on x */
-	Number *g_L = NULL;	/* lower bounds on g */
-	Number *g_U = NULL;	/* upper bounds on g */
+	ipnumber *x_L = NULL;	/* lower bounds on x */
+	ipnumber *x_U = NULL;	/* upper bounds on x */
+	ipnumber *g_L = NULL;	/* lower bounds on g */
+	ipnumber *g_U = NULL;	/* upper bounds on g */
 
 	double *xldata, *xudata;
 	double *gldata, *gudata;

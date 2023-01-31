@@ -1,42 +1,42 @@
 //  Author: Eric Xu
 //  Licensed under BSD
-
-#include "Python.h"
-#include "IpStdCInterface.h"
 #include <stdio.h>
+
+#include "IpStdCInterface.h"
+#include "IpTypes.h"
 #include "numpy/arrayobject.h"
+#include "Python.h"
 
 #ifndef PY_IPOPT_HOOK_
 #define PY_IPOPT_HOOK_
 
 // A series of callback functions used by Ipopt C Interface
-Bool eval_f(Index n,
-	    Number * x, Bool new_x, Number * obj_value, UserDataPtr user_data);
+Bool eval_f(ipindex n,
+	    ipnumber * x, Bool new_x, ipnumber * obj_value, UserDataPtr user_data);
 
-Bool eval_grad_f(Index n,
-		 Number * x,
-		 Bool new_x, Number * grad_f, UserDataPtr user_data);
+Bool eval_grad_f(ipindex n,
+		 ipnumber * x,
+		 Bool new_x, ipnumber * grad_f, UserDataPtr user_data);
 
-Bool eval_g(Index n,
-	    Number * x, Bool new_x, Index m, Number * g, UserDataPtr user_data);
+Bool eval_g(ipindex n, ipnumber * x, Bool new_x, ipindex m, ipnumber * g, UserDataPtr user_data);
 
-Bool eval_jac_g(Index n, Number * x, Bool new_x,
-		Index m, Index nele_jac,
-		Index * iRow, Index * jCol, Number * values,
+Bool eval_jac_g(ipindex n, ipnumber * x, Bool new_x,
+		ipindex m, ipindex nele_jac,
+		ipindex * iRow, ipindex * jCol, ipnumber * values,
 		UserDataPtr user_data);
 
-Bool eval_h(Index n, Number * x, Bool new_x, Number obj_factor,
-	    Index m, Number * lambda, Bool new_lambda,
-	    Index nele_hess, Index * iRow, Index * jCol,
-	    Number * values, UserDataPtr user_data);
+Bool eval_h(ipindex n, ipnumber * x, Bool new_x, ipnumber obj_factor,
+	    ipindex m, ipnumber * lambda, Bool new_lambda,
+	    ipindex nele_hess, ipindex * iRow, ipindex * jCol,
+	    ipnumber * values, UserDataPtr user_data);
 
-Bool eval_intermediate_callback(Index alg_mod,
-				Index iter_count, Number obj_value,
-				Number inf_pr, Number inf_du,
-				Number mu, Number d_norm,
-				Number regularization_size,
-				Number alpha_du, Number alpha_pr,
-				Index ls_trials, UserDataPtr data);
+Bool eval_intermediate_callback(ipindex alg_mod,
+				ipindex iter_count, ipnumber obj_value,
+				ipnumber inf_pr, ipnumber inf_du,
+				ipnumber mu, ipnumber d_norm,
+				ipnumber regularization_size,
+				ipnumber alpha_du, ipnumber alpha_pr,
+				ipindex ls_trials, UserDataPtr data);
 
 typedef struct {
 	PyObject *eval_f_python;
@@ -64,8 +64,8 @@ void logger(const char *fmt, ...);
 typedef struct {
 	PyObject_HEAD IpoptProblem nlp;
 	DispatchData *data;
-	Index n_variables;
-	Index m_constraints;
+	ipindex n_variables;
+	ipindex m_constraints;
 } problem;
 
 #endif				//  PY_IPOPT_HOOK_
